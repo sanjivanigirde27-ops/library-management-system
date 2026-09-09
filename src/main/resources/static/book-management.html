@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Book Management | THE PUSTAK REPOSITORY</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .book-page {
+            padding: 30px;
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .page-header h1 {
+            margin: 0;
+        }
+
+        .page-header p {
+            margin: 6px 0 0;
+            opacity: 0.7;
+        }
+
+        .add-book-btn {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .book-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border-radius: 12px;
+            background: #ffffff;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 8px;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .book-content {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .filter-select {
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .refresh-btn {
+            padding: 10px 18px;
+            border: 1px solid #ccc;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .books-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1100px;
+        }
+
+        .books-table th,
+        .books-table td {
+            padding: 13px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .books-table th {
+            font-size: 13px;
+            background: #f7f7f7;
+        }
+
+        .books-table td {
+            font-size: 14px;
+        }
+
+        .availability {
+            font-weight: 600;
+        }
+
+        .available {
+            color: #16803c;
+        }
+
+        .unavailable {
+            color: #c62828;
+        }
+
+        .action-btn {
+            border: none;
+            padding: 7px 11px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 5px;
+            font-size: 12px;
+        }
+
+        .edit-btn {
+            background: #eee;
+        }
+
+        .delete-btn {
+            background: #ffe5e5;
+            color: #c62828;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 35px;
+            opacity: 0.6;
+        }
+
+        /* Modal */
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 14px;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+        .close-btn {
+            border: none;
+            background: none;
+            font-size: 25px;
+            cursor: pointer;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 7px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .cancel-btn,
+        .save-btn {
+            padding: 10px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .cancel-btn {
+            border: 1px solid #ccc;
+            background: white;
+        }
+
+        .save-btn {
+            border: none;
+        }
+
+        .message {
+            display: none;
+            padding: 12px 15px;
+            border-radius: 7px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .message.success {
+            display: block;
+            background: #e7f7ed;
+            color: #16803c;
+        }
+
+        .message.error {
+            display: block;
+            background: #fbe9e9;
+            color: #c62828;
+        }
+
+        @media (max-width: 900px) {
+            .book-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .book-page {
+                padding: 15px;
+            }
+
+            .book-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="book-page">
+
+    <!-- Header -->
+
+    <div class="page-header">
+
+        <div>
+            <h1>Book Management</h1>
+            <p>Manage books, copies, categories and shelf locations.</p>
+        </div>
+
+        <button class="add-book-btn" onclick="openAddBookModal()">
+            + Add New Book
+        </button>
+
+    </div>
+
+
+    <!-- Statistics -->
+
+    <div class="book-stats">
+
+        <div class="stat-card">
+            <h3>Total Book Titles</h3>
+            <div class="number" id="totalTitles">0</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>Total Copies</h3>
+            <div class="number" id="totalCopies">0</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>Available Copies</h3>
+            <div class="number" id="availableCopies">0</div>
+        </div>
+
+        <div class="stat-card">
+            <h3>Issued Copies</h3>
+            <div class="number" id="issuedCopies">0</div>
+        </div>
+
+    </div>
+
+
+    <!-- Book Content -->
+
+    <div class="book-content">
+
+        <div id="message" class="message"></div>
+
+
+        <div class="toolbar">
+
+            <div class="search-box">
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search by title, author, ISBN or category..."
+                    oninput="searchBooks()"
+                >
+
+            </div>
+
+
+            <select
+                id="categoryFilter"
+                class="filter-select"
+                onchange="searchBooks()"
+            >
+                <option value="">All Categories</option>
+            </select>
+
+
+            <button
+                class="refresh-btn"
+                onclick="loadBooks()"
+            >
+                ↻ Refresh
+            </button>
+
+        </div>
+
+
+        <div class="table-container">
+
+            <table class="books-table">
+
+                <thead>
+
+                    <tr>
+                        <th>ID</th>
+                        <th>ISBN</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Publisher</th>
+                        <th>Category</th>
+                        <th>Total Copies</th>
+                        <th>Available</th>
+                        <th>Shelf</th>
+                        <th>Actions</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="bookTableBody">
+
+                    <tr>
+                        <td colspan="10" class="empty-message">
+                            Loading books...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Add / Edit Book Modal -->
+
+<div class="modal" id="bookModal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2 id="modalTitle">
+                Add New Book
+            </h2>
+
+            <button
+                class="close-btn"
+                onclick="closeBookModal()"
+            >
+                &times;
+            </button>
+
+        </div>
+
+
+        <form id="bookForm">
+
+            <input
+                type="hidden"
+                id="bookId"
+            >
+
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label for="isbn">
+                        ISBN *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="isbn"
+                        maxlength="20"
+                        required
+                        placeholder="Enter ISBN"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="title">
+                        Title *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="title"
+                        maxlength="200"
+                        required
+                        placeholder="Enter book title"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="author">
+                        Author *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="author"
+                        maxlength="100"
+                        required
+                        placeholder="Enter author name"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="publisher">
+                        Publisher
+                    </label>
+
+                    <input
+                        type="text"
+                        id="publisher"
+                        placeholder="Enter publisher"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="category">
+                        Category
+                    </label>
+
+                    <input
+                        type="text"
+                        id="category"
+                        placeholder="Enter category"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="shelfLocation">
+                        Shelf Location
+                    </label>
+
+                    <input
+                        type="text"
+                        id="shelfLocation"
+                        placeholder="Example: A-101"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="totalCopies">
+                        Total Copies *
+                    </label>
+
+                    <input
+                        type="number"
+                        id="totalCopies"
+                        min="1"
+                        required
+                        placeholder="Enter total copies"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="availableCopies">
+                        Available Copies *
+                    </label>
+
+                    <input
+                        type="number"
+                        id="availableCopies"
+                        min="0"
+                        required
+                        placeholder="Enter available copies"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    onclick="closeBookModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="save-btn"
+                >
+                    Save Book
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script src="book-management.js"></script>
+
+</body>
+</html>

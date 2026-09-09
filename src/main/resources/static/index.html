@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>THE PUSTAK REPOSITORY</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- ================= SIDEBAR ================= -->
+
+<aside class="sidebar">
+
+    <div class="brand">
+
+        <!-- YOUR LOGO WILL GO HERE -->
+        <div class="logo-placeholder">
+            YOUR<br>LOGO
+        </div>
+
+        <h1>THE PUSTAK</h1>
+        <h1>REPOSITORY</h1>
+
+        <p>LIBRARY MANAGEMENT SYSTEM</p>
+    </div>
+
+    <nav class="navigation">
+
+        <button class="nav-item active" onclick="showSection('dashboard', this)">
+            <span>⌂</span>
+            Dashboard
+        </button>
+
+        <button class="nav-item" onclick="showSection('users', this)">
+            <span>♙</span>
+            User Management
+        </button>
+
+        <button class="nav-item" onclick="showSection('books', this)">
+            <span>▤</span>
+            Book Management
+        </button>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+        <div class="system-status">
+            <span class="status-dot"></span>
+            Backend Connected
+        </div>
+    </div>
+
+</aside>
+
+
+<!-- ================= MAIN CONTENT ================= -->
+
+<main class="main-content">
+
+    <!-- TOP BAR -->
+
+    <header class="topbar">
+
+        <div>
+            <p class="small-heading">LIBRARY MANAGEMENT SYSTEM</p>
+            <h2 id="page-title">Dashboard</h2>
+        </div>
+
+        <div class="topbar-right">
+            <span class="connection">
+                ● MySQL Connected
+            </span>
+
+            <div class="profile">
+                <div class="profile-circle">L</div>
+                <div>
+                    <strong>Librarian</strong>
+                    <small>Staff</small>
+                </div>
+            </div>
+        </div>
+
+    </header>
+
+
+    <!-- ================= DASHBOARD ================= -->
+
+    <section id="dashboard" class="content-section active-section">
+
+        <div class="hero">
+
+            <div>
+                <p class="eyebrow">WELCOME TO</p>
+
+                <h1>
+                    THE PUSTAK<br>
+                    <span>REPOSITORY</span>
+                </h1>
+
+                <p>
+                    A centralized platform to manage books,
+                    users and library operations efficiently.
+                </p>
+            </div>
+
+            <div class="hero-decoration">
+                📖
+            </div>
+
+        </div>
+
+
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">OVERVIEW</p>
+                <h2>Library at a Glance</h2>
+            </div>
+        </div>
+
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div>
+                    <p>Total Books</p>
+                    <h3 id="dashboardBooks">—</h3>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div>
+                    <p>Total Users</p>
+                    <h3 id="dashboardUsers">—</h3>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">✓</div>
+                <div>
+                    <p>Available Copies</p>
+                    <h3 id="dashboardAvailable">—</h3>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="quick-actions">
+
+            <h2>Quick Access</h2>
+
+            <div class="quick-grid">
+
+                <button onclick="showSection('users', document.querySelectorAll('.nav-item')[1])">
+                    <span>👥</span>
+                    <strong>Manage Users</strong>
+                    <small>Add, edit and manage library users</small>
+                </button>
+
+                <button onclick="showSection('books', document.querySelectorAll('.nav-item')[2])">
+                    <span>📚</span>
+                    <strong>Manage Books</strong>
+                    <small>Add, edit and manage books</small>
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= USER MANAGEMENT ================= -->
+
+    <section id="users" class="content-section">
+
+        <div class="section-heading">
+
+            <div>
+                <p class="eyebrow">MODULE 01</p>
+                <h2>User Management</h2>
+                <p class="description">
+                    Manage registered library users.
+                </p>
+            </div>
+
+            <button class="primary-button" onclick="openUserForm()">
+                + Add User
+            </button>
+
+        </div>
+
+
+        <div class="toolbar">
+
+            <input
+                type="text"
+                id="userSearch"
+                placeholder="Search users..."
+                oninput="filterUsers()">
+
+            <button class="refresh-button" onclick="loadUsers()">
+                ↻ Refresh
+            </button>
+
+        </div>
+
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Full Name</th>
+                        <th>User Type</th>
+                        <th>Department</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="usersTableBody">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= BOOK MANAGEMENT ================= -->
+
+    <section id="books" class="content-section">
+
+        <div class="section-heading">
+
+            <div>
+                <p class="eyebrow">MODULE 02</p>
+                <h2>Book Management</h2>
+                <p class="description">
+                    Manage books available in the repository.
+                </p>
+            </div>
+
+            <button class="primary-button" onclick="openBookForm()">
+                + Add Book
+            </button>
+
+        </div>
+
+
+        <div class="toolbar">
+
+            <input
+                type="text"
+                id="bookSearch"
+                placeholder="Search books..."
+                oninput="filterBooks()">
+
+            <button class="refresh-button" onclick="loadBooks()">
+                ↻ Refresh
+            </button>
+
+        </div>
+
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ISBN</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Publisher</th>
+                        <th>Category</th>
+                        <th>Total</th>
+                        <th>Available</th>
+                        <th>Shelf</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="booksTableBody">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- ================= USER MODAL ================= -->
+
+<div id="userModal" class="modal">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+            <div>
+                <p class="eyebrow">USER MANAGEMENT</p>
+                <h2 id="userModalTitle">Add User</h2>
+            </div>
+
+            <button class="close-button" onclick="closeUserForm()">×</button>
+        </div>
+
+
+        <form id="userForm">
+
+            <input type="hidden" id="userId">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="fullName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>User Type</label>
+                    <input type="text" id="userType" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Department</label>
+                    <input type="text" id="department">
+                </div>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" id="phone">
+                </div>
+
+                <div class="form-group">
+                    <label>Registration Date</label>
+                    <input type="date" id="registrationDate">
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Address</label>
+                    <textarea id="address"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+
+                    <select id="status">
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="INACTIVE">INACTIVE</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+
+                <button type="button"
+                        class="secondary-button"
+                        onclick="closeUserForm()">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="primary-button">
+                    Save User
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ================= BOOK MODAL ================= -->
+
+<div id="bookModal" class="modal">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <div>
+                <p class="eyebrow">BOOK MANAGEMENT</p>
+                <h2 id="bookModalTitle">Add Book</h2>
+            </div>
+
+            <button class="close-button" onclick="closeBookForm()">×</button>
+
+        </div>
+
+
+        <form id="bookForm">
+
+            <input type="hidden" id="bookId">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>ISBN</label>
+                    <input type="text" id="isbn" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="title" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Author</label>
+                    <input type="text" id="author" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Publisher</label>
+                    <input type="text" id="publisher">
+                </div>
+
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="category">
+                </div>
+
+                <div class="form-group">
+                    <label>Total Copies</label>
+                    <input type="number" id="totalCopies" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Available Copies</label>
+                    <input type="number" id="availableCopies" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Shelf Location</label>
+                    <input type="text" id="shelfLocation">
+                </div>
+
+            </div>
+
+            <div class="modal-actions">
+
+                <button type="button"
+                        class="secondary-button"
+                        onclick="closeBookForm()">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="primary-button">
+                    Save Book
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ================= TOAST ================= -->
+
+<div id="toast" class="toast"></div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
