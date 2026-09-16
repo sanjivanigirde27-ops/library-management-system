@@ -12,6 +12,7 @@ The project is designed to manage library users and books through a simple web-b
 - Add new users
 - View users
 - Update user details
+- Delete users
 - Manage user information
 - Connected with MySQL database
 
