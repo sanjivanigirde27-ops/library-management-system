@@ -1,0 +1,12 @@
+package com.library.repository;
+
+import com.library.entity.SystemSetting;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+/**
+ * Module 8: Admin / Librarian System Settings Repository
+ */
+@Repository
+public interface SystemSettingRepository extends JpaRepository<SystemSetting, Long> {
+}

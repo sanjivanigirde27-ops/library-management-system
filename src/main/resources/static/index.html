@@ -3,495 +3,1015 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>THE PUSTAK REPOSITORY</title>
-
-    <link rel="stylesheet" href="style.css">
+    <title>Library Management System - 8 Business Modules</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/css/style.css" rel="stylesheet">
 </head>
-
 <body>
 
-<!-- ================= SIDEBAR ================= -->
-
-<aside class="sidebar">
-
-    <div class="brand">
-
-        <!-- YOUR LOGO WILL GO HERE -->
-        <div class="logo-placeholder">
-            YOUR<br>LOGO
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <h5><i class="bi bi-book-half text-primary me-2"></i>EduLibrary</h5>
+            <small>8 Business Modules</small>
         </div>
-
-        <h1>THE PUSTAK</h1>
-        <h1>REPOSITORY</h1>
-
-        <p>LIBRARY MANAGEMENT SYSTEM</p>
-    </div>
-
-    <nav class="navigation">
-
-        <button class="nav-item active" onclick="showSection('dashboard', this)">
-            <span>⌂</span>
-            Dashboard
-        </button>
-
-        <button class="nav-item" onclick="showSection('users', this)">
-            <span>♙</span>
-            User Management
-        </button>
-
-        <button class="nav-item" onclick="showSection('books', this)">
-            <span>▤</span>
-            Book Management
-        </button>
-
+        <ul class="sidebar-menu">
+            <li class="nav-item">
+                <a class="nav-link active" data-module="dashboard" id="nav-dashboard">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-module="users" id="nav-users">
+                    <i class="bi bi-people-fill"></i>
+                    <span>1. User Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-module="books" id="nav-books">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                    <span>2. Book Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-module="issue" id="nav-issue">
+                    <i class="bi bi-journal-arrow-up"></i>
+                    <span>3. Book Issue</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-module="return" id="nav-return">
+                    <i class="bi bi-arrow-return-left"></i>
+                    <span>4. Book Return</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-module="fines" id="nav-fines">
+                    <i class="bi bi-cash-stack"></i>
+                    <span>5. Fine Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-module="search" id="nav-search">
+                    <i class="bi bi-search"></i>
+                    <span>6. Search Book</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-module="reports" id="nav-reports">
+                    <i class="bi bi-bar-chart-fill"></i>
+                    <span>7. Library Reports</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-module="admin" id="nav-admin">
+                    <i class="bi bi-person-gear"></i>
+                    <span>8. Admin / Librarian</span>
+                </a>
+            </li>
+        </ul>
     </nav>
 
-    <div class="sidebar-bottom">
-        <div class="system-status">
-            <span class="status-dot"></span>
-            Backend Connected
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Top Navbar -->
+        <header class="topbar">
+            <div class="topbar-title">
+                <i class="bi bi-layers-fill text-primary"></i>
+                <span id="topbarLibraryName">Central College Library Management System</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold">
+                    <i class="bi bi-check-circle-fill text-success me-1"></i> Spring Boot + MySQL
+                </span>
+                <button class="btn btn-outline-secondary btn-sm" onclick="location.reload()" title="Refresh Page">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Body -->
+        <main class="content-body">
+
+            <!-- System Notice Banner -->
+            <div class="notice-banner">
+                <div>
+                    <i class="bi bi-megaphone-fill text-primary me-2"></i>
+                    <span id="dashboardNoticeText">Welcome to the College Library Management System.</span>
+                </div>
+                <small class="text-muted">Status: Online</small>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- DASHBOARD HOME OVERVIEW (Connecting to 8 Modules)       -->
+            <!-- ======================================================== -->
+            <section id="module-dashboard" class="module-section active">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="fw-bold mb-1">Library Dashboard</h4>
+                        <p class="text-muted mb-0">Select any of the 8 business modules below to manage library operations.</p>
+                    </div>
+                </div>
+
+                <!-- 8 Interactive Module Cards Grid -->
+                <div class="row g-4 mb-4">
+                    <!-- Module 1 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card module-card-link" data-module="users" style="cursor: pointer;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="icon-box bg-primary-subtle text-primary">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+                                <span class="badge bg-primary">Module 1</span>
+                            </div>
+                            <h3 id="userCountTotal">0</h3>
+                            <p class="fw-semibold text-dark">User Management</p>
+                            <small class="text-muted">Register, edit & manage members</small>
+                        </div>
+                    </div>
+
+                    <!-- Module 2 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card module-card-link" data-module="books" style="cursor: pointer;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="icon-box bg-success-subtle text-success">
+                                    <i class="bi bi-journal-bookmark-fill"></i>
+                                </div>
+                                <span class="badge bg-success">Module 2</span>
+                            </div>
+                            <h3 id="bookCountTitles">0</h3>
+                            <p class="fw-semibold text-dark">Book Management</p>
+                            <small class="text-muted">Catalog, stock & book inventory</small>
+                        </div>
+                    </div>
+
+                    <!-- Module 3 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card module-card-link" data-module="issue" style="cursor: pointer;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="icon-box bg-info-subtle text-info">
+                                    <i class="bi bi-journal-arrow-up"></i>
+                                </div>
+                                <span class="badge bg-info">Module 3</span>
+                            </div>
+                            <h3 id="activeIssueCount">0</h3>
+                            <p class="fw-semibold text-dark">Book Issue</p>
+                            <small class="text-muted">Issue books & track due dates</small>
+                        </div>
+                    </div>
+
+                    <!-- Module 4 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card module-card-link" data-module="return" style="cursor: pointer;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="icon-box bg-warning-subtle text-warning">
+                                    <i class="bi bi-arrow-return-left"></i>
+                                </div>
+                                <span class="badge bg-warning text-dark">Module 4</span>
+                            </div>
+                            <h3>Return Desk</h3>
+                            <p class="fw-semibold text-dark">Book Return</p>
+                            <small class="text-muted">Check-in books & calculate fines</small>
+                        </div>
+                    </div>
+
+                    <!-- Module 5 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card module-card-link" data-module="fines" style="cursor: pointer;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="icon-box bg-danger-subtle text-danger">
+                                    <i class="bi bi-cash-stack"></i>
+                                </div>
+                                <span class="badge bg-danger">Module 5</span>
+                            </div>
+                            <h3 id="finePendingAmount">$0.00</h3>
+                            <p class="fw-semibold text-dark">Fine Management</p>
+                            <small class="text-muted">Collect fees & manage waivers</small>
+                        </div>
+                    </div>
+
+                    <!-- Module 6 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card module-card-link" data-module="search" style="cursor: pointer;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="icon-box bg-secondary-subtle text-secondary">
+                                    <i class="bi bi-search"></i>
+                                </div>
+                                <span class="badge bg-secondary">Module 6</span>
+                            </div>
+                            <h3>Search</h3>
+                            <p class="fw-semibold text-dark">Search Book</p>
+                            <small class="text-muted">Instant catalog & category filter</small>
+                        </div>
+                    </div>
+
+                    <!-- Module 7 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card module-card-link" data-module="reports" style="cursor: pointer;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="icon-box bg-dark-subtle text-dark">
+                                    <i class="bi bi-bar-chart-fill"></i>
+                                </div>
+                                <span class="badge bg-dark">Module 7</span>
+                            </div>
+                            <h3>Analytics</h3>
+                            <p class="fw-semibold text-dark">Library Reports</p>
+                            <small class="text-muted">Overdue, circulation & top books</small>
+                        </div>
+                    </div>
+
+                    <!-- Module 8 -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="stat-card module-card-link" data-module="admin" style="cursor: pointer;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="icon-box bg-primary-subtle text-primary">
+                                    <i class="bi bi-person-gear"></i>
+                                </div>
+                                <span class="badge bg-primary">Module 8</span>
+                            </div>
+                            <h3>Settings</h3>
+                            <p class="fw-semibold text-dark">Admin / Librarian</p>
+                            <small class="text-muted">Policies, loan period & rates</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- MODULE 1: USER MANAGEMENT                                -->
+            <!-- ======================================================== -->
+            <section id="module-users" class="module-section">
+                <div class="custom-card">
+                    <div class="custom-card-header">
+                        <div>
+                            <h5><i class="bi bi-people-fill text-primary"></i> Module 1: User Management</h5>
+                            <small class="text-muted">Add, view, edit, and manage library members</small>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="openAddUserModal()">
+                            <i class="bi bi-person-plus-fill me-1"></i> Add New Member
+                        </button>
+                    </div>
+                    <div class="custom-card-body">
+                        <div class="table-responsive">
+                            <table class="table custom-table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Member Details</th>
+                                        <th>Phone</th>
+                                        <th>Membership Type</th>
+                                        <th>Status</th>
+                                        <th>Joined Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="userTableBody">
+                                    <!-- Injected via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- MODULE 2: BOOK MANAGEMENT                                -->
+            <!-- ======================================================== -->
+            <section id="module-books" class="module-section">
+                <div class="custom-card">
+                    <div class="custom-card-header">
+                        <div>
+                            <h5><i class="bi bi-journal-bookmark-fill text-success"></i> Module 2: Book Management</h5>
+                            <small class="text-muted">Manage library catalog, categories, rack locations, and inventory</small>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-light text-dark border p-2">Total Copies: <strong id="bookCountCopies">0</strong></span>
+                            <span class="badge bg-success-subtle text-success p-2">Available: <strong id="bookCountAvailable">0</strong></span>
+                            <button class="btn btn-success btn-sm" onclick="openAddBookModal()">
+                                <i class="bi bi-plus-circle-fill me-1"></i> Add New Book
+                            </button>
+                        </div>
+                    </div>
+                    <div class="custom-card-body">
+                        <div class="table-responsive">
+                            <table class="table custom-table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Book Title & ISBN</th>
+                                        <th>Author</th>
+                                        <th>Category</th>
+                                        <th>Rack / Shelf</th>
+                                        <th>Stock Availability</th>
+                                        <th>Price</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bookTableBody">
+                                    <!-- Injected via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- MODULE 3: BOOK ISSUE                                     -->
+            <!-- ======================================================== -->
+            <section id="module-issue" class="module-section">
+                <div class="row">
+                    <!-- Issue Form Column -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="custom-card h-100">
+                            <div class="custom-card-header">
+                                <h5><i class="bi bi-journal-arrow-up text-info"></i> Issue a Book</h5>
+                            </div>
+                            <div class="custom-card-body">
+                                <form id="issueBookForm">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Select Member <span class="text-danger">*</span></label>
+                                        <select id="issueUserId" class="form-select" required>
+                                            <option value="">Loading active members...</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Select Book <span class="text-danger">*</span></label>
+                                        <select id="issueBookId" class="form-select" required>
+                                            <option value="">Loading available books...</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Loan Period (Days)</label>
+                                        <input type="number" id="issueLoanDays" class="form-control" value="14" min="1" max="90" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Remarks / Purpose</label>
+                                        <textarea id="issueRemarks" class="form-control" rows="2" placeholder="e.g. Project reference, Course study"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-check2-circle me-1"></i> Confirm & Issue Book
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Issued Books Table -->
+                    <div class="col-lg-8 mb-4">
+                        <div class="custom-card h-100">
+                            <div class="custom-card-header">
+                                <h5><i class="bi bi-clock-history text-primary"></i> Currently Issued Books</h5>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="loadActiveIssues()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                            <div class="custom-card-body">
+                                <div class="table-responsive">
+                                    <table class="table custom-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Issue ID</th>
+                                                <th>Member</th>
+                                                <th>Book</th>
+                                                <th>Issued Date</th>
+                                                <th>Due Date</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="activeIssuesTableBody">
+                                            <!-- Injected via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- MODULE 4: BOOK RETURN                                    -->
+            <!-- ======================================================== -->
+            <section id="module-return" class="module-section">
+                <div class="row">
+                    <!-- Return Processing Card -->
+                    <div class="col-lg-5 mb-4">
+                        <div class="custom-card">
+                            <div class="custom-card-header">
+                                <h5><i class="bi bi-arrow-return-left text-warning"></i> Module 4: Book Return Desk</h5>
+                            </div>
+                            <div class="custom-card-body">
+                                <form id="returnBookForm">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Select Issued Book to Return <span class="text-danger">*</span></label>
+                                        <select id="returnIssueSelect" class="form-select" onchange="onReturnIssueSelected()" required>
+                                            <option value="">-- Select Active Issue Transaction --</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Overdue & Fine Calculation Preview Box -->
+                                    <div id="returnCalcPreview" class="p-3 mb-3 bg-light rounded border d-none">
+                                        <h6 class="fw-bold mb-2 text-primary border-bottom pb-1">Return & Fine Calculation</h6>
+                                        <div class="small mb-1"><strong>Book:</strong> <span id="previewBookTitle">-</span></div>
+                                        <div class="small mb-1"><strong>Member:</strong> <span id="previewUserName">-</span></div>
+                                        <div class="small mb-1"><strong>Issue Date:</strong> <span id="previewIssueDate">-</span></div>
+                                        <div class="small mb-1"><strong>Due Date:</strong> <span id="previewDueDate">-</span></div>
+                                        <div class="small mb-1"><strong>Overdue Days:</strong> <span id="previewOverdueDays" class="badge bg-secondary">0 days</span></div>
+                                        <div class="mt-2 pt-2 border-top">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>Calculated Fine:</span>
+                                                <span id="previewFineAmount" class="text-success fw-bold fs-5">$0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Return Condition / Notes</label>
+                                        <textarea id="returnRemarks" class="form-control" rows="2" placeholder="e.g. Good condition, returned on time"></textarea>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-warning text-dark w-100 fw-semibold">
+                                        <i class="bi bi-box-arrow-in-down-left me-1"></i> Confirm Book Return
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Return History Table -->
+                    <div class="col-lg-7 mb-4">
+                        <div class="custom-card">
+                            <div class="custom-card-header">
+                                <h5><i class="bi bi-journal-check text-success"></i> Recent Return History</h5>
+                            </div>
+                            <div class="custom-card-body">
+                                <div class="table-responsive">
+                                    <table class="table custom-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Issue ID</th>
+                                                <th>Member</th>
+                                                <th>Book</th>
+                                                <th>Issue Date</th>
+                                                <th>Due Date</th>
+                                                <th>Returned On</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="returnHistoryTableBody">
+                                            <!-- Injected via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- MODULE 5: FINE MANAGEMENT                                -->
+            <!-- ======================================================== -->
+            <section id="module-fines" class="module-section">
+                <!-- Fine Summary Metrics -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <p class="text-muted small">Total Overdue Fines</p>
+                            <h3 id="fineTotalAmount" class="text-dark">$0.00</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <p class="text-muted small">Total Collected Fines</p>
+                            <h3 id="fineCollectedAmount" class="text-success">$0.00</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <p class="text-muted small">Pending Unpaid Fines</p>
+                            <h3 id="finePendingAmount" class="text-danger">$0.00</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <p class="text-muted small">Unpaid Records</p>
+                            <h3 id="fineUnpaidCount" class="text-warning">0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="custom-card">
+                    <div class="custom-card-header">
+                        <div>
+                            <h5><i class="bi bi-cash-stack text-danger"></i> Module 5: Fine Management</h5>
+                            <small class="text-muted">Track overdue fines, record payments, and manage waivers</small>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-secondary active" onclick="filterFines('ALL')">All Fines</button>
+                            <button class="btn btn-outline-danger" onclick="filterFines('UNPAID')">Unpaid Only</button>
+                            <button class="btn btn-outline-success" onclick="filterFines('PAID')">Paid Only</button>
+                        </div>
+                    </div>
+                    <div class="custom-card-body">
+                        <div class="table-responsive">
+                            <table class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fine ID</th>
+                                        <th>Member Info</th>
+                                        <th>Book Title</th>
+                                        <th>Overdue Days</th>
+                                        <th>Fine Amount</th>
+                                        <th>Status</th>
+                                        <th>Paid Date & Mode</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fineTableBody">
+                                    <!-- Injected via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- MODULE 6: SEARCH BOOK                                    -->
+            <!-- ======================================================== -->
+            <section id="module-search" class="module-section">
+                <div class="custom-card">
+                    <div class="custom-card-header">
+                        <div>
+                            <h5><i class="bi bi-search text-primary"></i> Module 6: Search Book Catalog</h5>
+                            <small class="text-muted">Find books by Title, Author, ISBN, or Category in real-time</small>
+                        </div>
+                    </div>
+                    <div class="custom-card-body">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                    <input type="text" id="searchQuery" class="form-control" placeholder="Search by title, author, or ISBN...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="searchCategory" class="form-select">
+                                    <option value="All">All Categories</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-center">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="inStockOnly">
+                                    <label class="form-check-label fw-semibold" for="inStockOnly">Available in Stock Only</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results Grid -->
+                        <div id="searchResultsGrid" class="row">
+                            <!-- Injected via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- MODULE 7: LIBRARY REPORTS                                -->
+            <!-- ======================================================== -->
+            <section id="module-reports" class="module-section">
+                <!-- Summary Metrics for Reports -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-2">
+                        <div class="stat-card text-center p-3">
+                            <small class="text-muted">Total Stock</small>
+                            <h4 id="repTotalBooks" class="fw-bold my-1">0</h4>
+                            <small class="text-muted">copies</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card text-center p-3">
+                            <small class="text-muted">Available</small>
+                            <h4 id="repAvailableBooks" class="fw-bold my-1 text-success">0</h4>
+                            <small class="text-muted">copies on shelf</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card text-center p-3">
+                            <small class="text-muted">Registered Users</small>
+                            <h4 id="repTotalUsers" class="fw-bold my-1 text-primary">0</h4>
+                            <small class="text-muted">members</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card text-center p-3">
+                            <small class="text-muted">Active Issues</small>
+                            <h4 id="repActiveIssues" class="fw-bold my-1 text-info">0</h4>
+                            <small class="text-muted">in circulation</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card text-center p-3">
+                            <small class="text-muted">Overdue</small>
+                            <h4 id="repOverdueIssues" class="fw-bold my-1 text-danger">0</h4>
+                            <small class="text-muted">late returns</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card text-center p-3">
+                            <small class="text-muted">Fine Collected</small>
+                            <h4 id="repFineCollected" class="fw-bold my-1 text-success">$0.00</h4>
+                            <small class="text-muted">revenue</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabbed Detailed Reports -->
+                <div class="custom-card">
+                    <div class="custom-card-header">
+                        <h5><i class="bi bi-bar-chart-fill text-primary"></i> Module 7: Library Operational Reports</h5>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                            <i class="bi bi-printer me-1"></i> Print / Export Report
+                        </button>
+                    </div>
+                    <div class="custom-card-body">
+                        <ul class="nav nav-tabs mb-4" id="reportTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="tab-most-issued" data-bs-toggle="tab" data-bs-target="#pane-most-issued" type="button">
+                                    <i class="bi bi-fire text-danger me-1"></i> Most Issued Books
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-overdue" data-bs-toggle="tab" data-bs-target="#pane-overdue" type="button">
+                                    <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Overdue Defaulters
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-fines" data-bs-toggle="tab" data-bs-target="#pane-fines" type="button">
+                                    <i class="bi bi-cash me-1"></i> Fine Collection Audit
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="tab-user-activity" data-bs-toggle="tab" data-bs-target="#pane-user-activity" type="button">
+                                    <i class="bi bi-person-lines-fill me-1"></i> Member Borrowing Activity
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="reportTabsContent">
+                            <!-- Tab 1: Most Issued -->
+                            <div class="tab-pane fade show active" id="pane-most-issued">
+                                <div class="table-responsive">
+                                    <table class="table custom-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Rank</th>
+                                                <th>Book Title</th>
+                                                <th>Author</th>
+                                                <th>Category</th>
+                                                <th>Times Borrowed</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="repMostIssuedBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Tab 2: Overdue Defaulters -->
+                            <div class="tab-pane fade" id="pane-overdue">
+                                <div class="table-responsive">
+                                    <table class="table custom-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Issue ID</th>
+                                                <th>Member Name & Contact</th>
+                                                <th>Book Title</th>
+                                                <th>Due Date</th>
+                                                <th>Days Late</th>
+                                                <th>Accrued Fine</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="repOverdueBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Tab 3: Fine Collection Audit -->
+                            <div class="tab-pane fade" id="pane-fines">
+                                <div class="table-responsive">
+                                    <table class="table custom-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Fine ID</th>
+                                                <th>Member</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                                <th>Payment Date</th>
+                                                <th>Payment Mode</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="repFineCollectionBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Tab 4: Member Activity -->
+                            <div class="tab-pane fade" id="pane-user-activity">
+                                <div class="table-responsive">
+                                    <table class="table custom-table">
+                                        <thead>
+                                            <tr>
+                                                <th>User ID</th>
+                                                <th>Member Name & Email</th>
+                                                <th>Membership Type</th>
+                                                <th>Total Borrowed</th>
+                                                <th>Currently Holding</th>
+                                                <th>Returned</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="repUserActivityBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ======================================================== -->
+            <!-- MODULE 8: ADMIN / LIBRARIAN                              -->
+            <!-- ======================================================== -->
+            <section id="module-admin" class="module-section">
+                <div class="row">
+                    <!-- Librarian Profile Card -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="custom-card h-100">
+                            <div class="custom-card-header">
+                                <h5><i class="bi bi-person-badge text-primary"></i> Librarian Profile</h5>
+                            </div>
+                            <div class="custom-card-body text-center">
+                                <div class="avatar-placeholder mb-3">
+                                    <i class="bi bi-person-circle fs-1 text-primary"></i>
+                                </div>
+                                <h5 id="adminCardName" class="fw-bold mb-1">Chief Librarian</h5>
+                                <p id="adminCardLibName" class="text-primary small mb-2">Central College Library</p>
+                                <span class="badge bg-success-subtle text-success mb-3">Administrator Access</span>
+
+                                <ul class="list-group list-group-flush text-start small mt-2">
+                                    <li class="list-group-item d-flex justify-content-between px-0">
+                                        <span class="text-muted"><i class="bi bi-envelope me-1"></i> Email:</span>
+                                        <span id="adminCardEmail" class="fw-semibold">librarian@college.edu</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between px-0">
+                                        <span class="text-muted"><i class="bi bi-telephone me-1"></i> Phone:</span>
+                                        <span id="adminCardPhone" class="fw-semibold">+1-555-0199</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between px-0">
+                                        <span class="text-muted"><i class="bi bi-calendar3 me-1"></i> Default Loan:</span>
+                                        <span id="adminCardLoanDays" class="fw-semibold">14 Days</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between px-0">
+                                        <span class="text-muted"><i class="bi bi-coin me-1"></i> Overdue Fine:</span>
+                                        <span id="adminCardFineRate" class="fw-semibold">$5.00/day</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Policy & Rules Configuration Form -->
+                    <div class="col-lg-8 mb-4">
+                        <div class="custom-card h-100">
+                            <div class="custom-card-header">
+                                <h5><i class="bi bi-sliders text-primary"></i> Module 8: System Configuration & Rules</h5>
+                                <small class="text-muted">Configure operational parameters</small>
+                            </div>
+                            <div class="custom-card-body">
+                                <form id="adminSettingsForm">
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Library / College Name</label>
+                                            <input type="text" id="settingLibraryName" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Chief Librarian Name</label>
+                                            <input type="text" id="settingLibrarianName" class="form-control" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Librarian Email</label>
+                                            <input type="email" id="settingLibrarianEmail" class="form-control" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">Librarian Phone</label>
+                                            <input type="text" id="settingLibrarianPhone" class="form-control">
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold">Max Books Per User</label>
+                                            <input type="number" id="settingMaxBooks" class="form-control" min="1" max="10" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold">Default Loan Period (Days)</label>
+                                            <input type="number" id="settingLoanPeriod" class="form-control" min="1" max="90" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold">Fine Rate Per Overdue Day ($)</label>
+                                            <input type="number" id="settingFineRate" class="form-control" step="0.5" min="0" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label fw-semibold">Library Announcement / Notice Banner</label>
+                                        <textarea id="settingNotice" class="form-control" rows="3" placeholder="Announcement shown on top of the dashboard..."></textarea>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-save me-1"></i> Save System Configuration
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODALS                                                       -->
+    <!-- ============================================================ -->
+
+    <!-- 1. User Modal (Add/Edit) -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="userForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="userModalTitle">Add New Member</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="userId">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                            <input type="text" id="userName" class="form-control" required placeholder="e.g. Alice Johnson">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                            <input type="email" id="userEmail" class="form-control" required placeholder="alice@college.edu">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Phone Number</label>
+                            <input type="text" id="userPhone" class="form-control" placeholder="9876543210">
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Membership Type</label>
+                                <select id="userMembershipType" class="form-select">
+                                    <option value="Student">Student</option>
+                                    <option value="Faculty">Faculty</option>
+                                    <option value="Guest">Guest</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Status</label>
+                                <select id="userStatus" class="form-select">
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Member</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-</aside>
-
-
-<!-- ================= MAIN CONTENT ================= -->
-
-<main class="main-content">
-
-    <!-- TOP BAR -->
-
-    <header class="topbar">
-
-        <div>
-            <p class="small-heading">LIBRARY MANAGEMENT SYSTEM</p>
-            <h2 id="page-title">Dashboard</h2>
-        </div>
-
-        <div class="topbar-right">
-            <span class="connection">
-                ● MySQL Connected
-            </span>
-
-            <div class="profile">
-                <div class="profile-circle">L</div>
-                <div>
-                    <strong>Librarian</strong>
-                    <small>Staff</small>
-                </div>
+    <!-- 2. Book Modal (Add/Edit) -->
+    <div class="modal fade" id="bookModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="bookForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="bookModalTitle">Add New Book</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="bookId">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold">Book Title <span class="text-danger">*</span></label>
+                                <input type="text" id="bookTitle" class="form-control" required placeholder="e.g. Introduction to Algorithms">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Author <span class="text-danger">*</span></label>
+                                <input type="text" id="bookAuthor" class="form-control" required placeholder="Thomas H. Cormen">
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">ISBN <span class="text-danger">*</span></label>
+                                <input type="text" id="bookIsbn" class="form-control" required placeholder="978-0262033848">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                                <input type="text" id="bookCategory" class="form-control" required placeholder="Computer Science">
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Publisher</label>
+                                <input type="text" id="bookPublisher" class="form-control" placeholder="MIT Press">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Rack / Shelf Location</label>
+                                <input type="text" id="bookRackNumber" class="form-control" placeholder="Rack CS-101">
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Total Copies</label>
+                                <input type="number" id="bookTotalCopies" class="form-control" value="3" min="1" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Book Price ($)</label>
+                                <input type="number" id="bookPrice" class="form-control" step="0.01" value="25.00" min="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Save Book</button>
+                    </div>
+                </form>
             </div>
         </div>
-
-    </header>
-
-
-    <!-- ================= DASHBOARD ================= -->
-
-    <section id="dashboard" class="content-section active-section">
-
-        <div class="hero">
-
-            <div>
-                <p class="eyebrow">WELCOME TO</p>
-
-                <h1>
-                    THE PUSTAK<br>
-                    <span>REPOSITORY</span>
-                </h1>
-
-                <p>
-                    A centralized platform to manage books,
-                    users and library operations efficiently.
-                </p>
-            </div>
-
-            <div class="hero-decoration">
-                📖
-            </div>
-
-        </div>
-
-
-        <div class="section-heading">
-            <div>
-                <p class="eyebrow">OVERVIEW</p>
-                <h2>Library at a Glance</h2>
-            </div>
-        </div>
-
-
-        <div class="stats-grid">
-
-            <div class="stat-card">
-                <div class="stat-icon">📚</div>
-                <div>
-                    <p>Total Books</p>
-                    <h3 id="dashboardBooks">—</h3>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">👥</div>
-                <div>
-                    <p>Total Users</p>
-                    <h3 id="dashboardUsers">—</h3>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">✓</div>
-                <div>
-                    <p>Available Copies</p>
-                    <h3 id="dashboardAvailable">—</h3>
-                </div>
-            </div>
-
-        </div>
-
-
-        <div class="quick-actions">
-
-            <h2>Quick Access</h2>
-
-            <div class="quick-grid">
-
-                <button onclick="showSection('users', document.querySelectorAll('.nav-item')[1])">
-                    <span>👥</span>
-                    <strong>Manage Users</strong>
-                    <small>Add, edit and manage library users</small>
-                </button>
-
-                <button onclick="showSection('books', document.querySelectorAll('.nav-item')[2])">
-                    <span>📚</span>
-                    <strong>Manage Books</strong>
-                    <small>Add, edit and manage books</small>
-                </button>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- ================= USER MANAGEMENT ================= -->
-
-    <section id="users" class="content-section">
-
-        <div class="section-heading">
-
-            <div>
-                <p class="eyebrow">MODULE 01</p>
-                <h2>User Management</h2>
-                <p class="description">
-                    Manage registered library users.
-                </p>
-            </div>
-
-            <button class="primary-button" onclick="openUserForm()">
-                + Add User
-            </button>
-
-        </div>
-
-
-        <div class="toolbar">
-
-            <input
-                type="text"
-                id="userSearch"
-                placeholder="Search users..."
-                oninput="filterUsers()">
-
-            <button class="refresh-button" onclick="loadUsers()">
-                ↻ Refresh
-            </button>
-
-        </div>
-
-
-        <div class="table-container">
-
-            <table>
-
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Full Name</th>
-                        <th>User Type</th>
-                        <th>Department</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody id="usersTableBody">
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </section>
-
-
-    <!-- ================= BOOK MANAGEMENT ================= -->
-
-    <section id="books" class="content-section">
-
-        <div class="section-heading">
-
-            <div>
-                <p class="eyebrow">MODULE 02</p>
-                <h2>Book Management</h2>
-                <p class="description">
-                    Manage books available in the repository.
-                </p>
-            </div>
-
-            <button class="primary-button" onclick="openBookForm()">
-                + Add Book
-            </button>
-
-        </div>
-
-
-        <div class="toolbar">
-
-            <input
-                type="text"
-                id="bookSearch"
-                placeholder="Search books..."
-                oninput="filterBooks()">
-
-            <button class="refresh-button" onclick="loadBooks()">
-                ↻ Refresh
-            </button>
-
-        </div>
-
-
-        <div class="table-container">
-
-            <table>
-
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>ISBN</th>
-                        <th>Title</th>
-                        <th>Author</th>
-                        <th>Publisher</th>
-                        <th>Category</th>
-                        <th>Total</th>
-                        <th>Available</th>
-                        <th>Shelf</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody id="booksTableBody">
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </section>
-
-</main>
-
-
-<!-- ================= USER MODAL ================= -->
-
-<div id="userModal" class="modal">
-
-    <div class="modal-box">
-
-        <div class="modal-header">
-            <div>
-                <p class="eyebrow">USER MANAGEMENT</p>
-                <h2 id="userModalTitle">Add User</h2>
-            </div>
-
-            <button class="close-button" onclick="closeUserForm()">×</button>
-        </div>
-
-
-        <form id="userForm">
-
-            <input type="hidden" id="userId">
-
-            <div class="form-grid">
-
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" id="fullName" required>
-                </div>
-
-                <div class="form-group">
-                    <label>User Type</label>
-                    <input type="text" id="userType" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Department</label>
-                    <input type="text" id="department">
-                </div>
-
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="email" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Phone</label>
-                    <input type="text" id="phone">
-                </div>
-
-                <div class="form-group">
-                    <label>Registration Date</label>
-                    <input type="date" id="registrationDate">
-                </div>
-
-                <div class="form-group full-width">
-                    <label>Address</label>
-                    <textarea id="address"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label>Status</label>
-
-                    <select id="status">
-                        <option value="ACTIVE">ACTIVE</option>
-                        <option value="INACTIVE">INACTIVE</option>
-                    </select>
-                </div>
-
-            </div>
-
-            <div class="modal-actions">
-
-                <button type="button"
-                        class="secondary-button"
-                        onclick="closeUserForm()">
-                    Cancel
-                </button>
-
-                <button type="submit"
-                        class="primary-button">
-                    Save User
-                </button>
-
-            </div>
-
-        </form>
-
     </div>
 
-</div>
-
-
-<!-- ================= BOOK MODAL ================= -->
-
-<div id="bookModal" class="modal">
-
-    <div class="modal-box">
-
-        <div class="modal-header">
-
-            <div>
-                <p class="eyebrow">BOOK MANAGEMENT</p>
-                <h2 id="bookModalTitle">Add Book</h2>
+    <!-- 3. Fine Payment Modal -->
+    <div class="modal fade" id="payFineModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="payFineForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-cash-coin text-success me-2"></i>Collect Fine Payment</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="payFineId">
+                        <div class="alert alert-info py-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>Total Fine Payable:</span>
+                                <strong id="payFineAmount" class="fs-5 text-danger">$0.00</strong>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Payment Mode</label>
+                            <select id="payFineMode" class="form-select">
+                                <option value="Cash">Cash</option>
+                                <option value="UPI">UPI / QR Code</option>
+                                <option value="Card">Debit / Credit Card</option>
+                                <option value="Online">Online Portal</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Receipt Remarks</label>
+                            <textarea id="payFineRemarks" class="form-control" rows="2" placeholder="Receipt / transaction reference"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Record Payment</button>
+                    </div>
+                </form>
             </div>
-
-            <button class="close-button" onclick="closeBookForm()">×</button>
-
         </div>
-
-
-        <form id="bookForm">
-
-            <input type="hidden" id="bookId">
-
-            <div class="form-grid">
-
-                <div class="form-group">
-                    <label>ISBN</label>
-                    <input type="text" id="isbn" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Title</label>
-                    <input type="text" id="title" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Author</label>
-                    <input type="text" id="author" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Publisher</label>
-                    <input type="text" id="publisher">
-                </div>
-
-                <div class="form-group">
-                    <label>Category</label>
-                    <input type="text" id="category">
-                </div>
-
-                <div class="form-group">
-                    <label>Total Copies</label>
-                    <input type="number" id="totalCopies" min="0" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Available Copies</label>
-                    <input type="number" id="availableCopies" min="0" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Shelf Location</label>
-                    <input type="text" id="shelfLocation">
-                </div>
-
-            </div>
-
-            <div class="modal-actions">
-
-                <button type="button"
-                        class="secondary-button"
-                        onclick="closeBookForm()">
-                    Cancel
-                </button>
-
-                <button type="submit"
-                        class="primary-button">
-                    Save Book
-                </button>
-
-            </div>
-
-        </form>
-
     </div>
 
-</div>
+    <!-- Toast Container -->
+    <div class="toast-container toast-container-custom" id="toastContainer"></div>
 
-
-<!-- ================= TOAST ================= -->
-
-<div id="toast" class="toast"></div>
-
-
-<script src="script.js"></script>
-
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom Application JS -->
+    <script src="/js/app.js"></script>
 </body>
 </html>
