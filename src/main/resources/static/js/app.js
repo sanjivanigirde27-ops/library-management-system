@@ -1,36 +1,169 @@
 /**
- * Library Management System - Frontend JavaScript (All 8 Modules)
- * Fully connected to Spring Boot REST APIs
+ * ==============================================================================
+ * EduLibrary - Library Management System (Frontend Application Logic)
+ * 8 Dedicated Business Modules + Dashboard Overview
+ * Connected to Java Spring Boot REST Backend & MySQL Database
+ * ==============================================================================
  */
 
+// Configurable API Base URL (defaults to '/api' for same-origin or localhost:8080)
 const API_BASE = '/api';
 
-// State management
-let allBooksCache = [];
-let allUsersCache = [];
-let activeIssuesCache = [];
+// ------------------------------------------------------------------------------
+// Reusable API Client Helper
+// ------------------------------------------------------------------------------
+const apiClient = {
+    async request(endpoint, options = {}) {
+        showLoading(true);
+        const url = `${API_BASE}${endpoint}`;
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...options.headers
+            },
+            ...options
+        };
 
-// DOM Ready
+        try {
+            const response = await fetch(url, config);
+            const contentType = response.headers.get('content-type');
+            let data = null;
+
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                data = await response.text();
+            }
+
+            if (!response.ok) {
+                const errorMessage = (data && data.error) ? data.error : `HTTP Error ${response.status}: ${response.statusText}`;
+                throw new Error(errorMessage);
+            }
+
+            return data;
+        } catch (error) {
+            console.error(`API Error on [${options.method || 'GET'}] ${endpoint}:`, error);
+            throw error;
+        } finally {
+            showLoading(false);
+        }
+    },
+
+    get(endpoint) {
+        return this.request(endpoint, { method: 'GET' });
+    },
+
+    post(endpoint, body) {
+        return this.request(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(body)
+        });
+    },
+
+    put(endpoint, body) {
+        return this.request(endpoint, {
+            method: 'PUT',
+            body: JSON.stringify(body)
+        });
+    },
+
+    delete(endpoint) {
+        return this.request(endpoint, { method: 'DELETE' });
+    }
+};
+
+// ------------------------------------------------------------------------------
+// Global In-Memory Data State
+// ------------------------------------------------------------------------------
+let state = {
+    currentModule: 'dashboard',
+    users: [],
+    books: [],
+    categories: [],
+    activeIssues: [],
+    returnHistory: [],
+    fines: [],
+    fineSummary: {},
+    reportSummary: {},
+    settings: {},
+    searchViewMode: 'grid',
+    lastReturnResult: null
+};
+
+// ------------------------------------------------------------------------------
+// Application Initialization
+// ------------------------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
+    initSidebar();
     initNavigation();
-    loadDashboardNotice();
-    loadAllModuleData();
-    setupEventListeners();
+    initSearchInputs();
+    initFormHandlers();
+    
+    // Initial data load
+    loadInitialData();
 });
 
-// Navigation Handler for EXACTLY 8 Modules
-function initNavigation() {
-    const navLinks = document.querySelectorAll('.sidebar-menu .nav-link, .module-card-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetModule = link.getAttribute('data-module');
-            showModule(targetModule);
+function initSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            if (window.innerWidth <= 992) {
+                sidebar.classList.toggle('show');
+                overlay.classList.toggle('active');
+            } else {
+                document.body.classList.toggle('sidebar-collapsed');
+            }
         });
-    });
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('show');
+            overlay.classList.remove('active');
+        });
+    }
 }
 
-function showModule(moduleId) {
+function initNavigation() {
+    // Navigation links in sidebar
+    document.querySelectorAll('.sidebar-menu .nav-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const moduleName = link.getAttribute('data-module');
+            if (moduleName) {
+                switchModule(moduleName);
+                if (window.innerWidth <= 992) {
+                    document.getElementById('sidebar')?.classList.remove('show');
+                    document.getElementById('sidebarOverlay')?.classList.remove('active');
+                }
+            }
+        });
+    });
+
+    // Top navbar global search
+    const navSearch = document.getElementById('navSearchInput');
+    if (navSearch) {
+        navSearch.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const query = navSearch.value.trim();
+                switchModule('search');
+                const heroSearch = document.getElementById('searchHeroInput');
+                if (heroSearch) {
+                    heroSearch.value = query;
+                    executeSearch();
+                }
+            }
+        });
+    }
+}
+
+function switchModule(moduleId) {
+    state.currentModule = moduleId;
+
     // Update active nav link
     document.querySelectorAll('.sidebar-menu .nav-link').forEach(link => {
         if (link.getAttribute('data-module') === moduleId) {
@@ -40,15 +173,38 @@ function showModule(moduleId) {
         }
     });
 
-    // Hide all modules and show target
+    // Update page title and breadcrumb in topbar
+    const titleElem = document.getElementById('pageTitle');
+    const breadcrumbElem = document.getElementById('pageBreadcrumb');
+    const titles = {
+        dashboard: { title: 'Dashboard', desc: 'Central Overview & Key Metrics' },
+        users: { title: 'User Management', desc: 'Module 1: Member Registration & Profiles' },
+        books: { title: 'Book Management', desc: 'Module 2: Catalog & Inventory Management' },
+        issue: { title: 'Book Issue', desc: 'Module 3: Circulation Borrowing Desk' },
+        return: { title: 'Book Return', desc: 'Module 4: Book Return Desk & Check-in' },
+        fines: { title: 'Fine Management', desc: 'Module 5: Overdue Fee Collection & Waivers' },
+        search: { title: 'Search Book', desc: 'Module 6: Multi-Criteria Real-Time Catalog' },
+        reports: { title: 'Library Reports', desc: 'Module 7: Statistical Reports & Audits' },
+        admin: { title: 'Admin / Librarian', desc: 'Module 8: Operational Policies & System Rules' }
+    };
+
+    if (titles[moduleId]) {
+        if (titleElem) titleElem.innerText = titles[moduleId].title;
+        if (breadcrumbElem) breadcrumbElem.innerText = titles[moduleId].desc;
+    }
+
+    // Toggle module sections
     document.querySelectorAll('.module-section').forEach(sec => sec.classList.remove('active'));
     const targetSection = document.getElementById(`module-${moduleId}`);
     if (targetSection) {
         targetSection.classList.add('active');
     }
 
-    // Refresh specific module data
+    // Trigger data refresh for the target module
     switch (moduleId) {
+        case 'dashboard':
+            loadDashboard();
+            break;
         case 'users':
             loadUsers();
             break;
@@ -56,27 +212,20 @@ function showModule(moduleId) {
             loadBooks();
             break;
         case 'issue':
-            loadIssueFormOptions();
-            loadActiveIssues();
+            loadIssueDesk();
             break;
         case 'return':
-            loadReturnIssueOptions();
-            loadReturnHistory();
+            loadReturnDesk();
             break;
         case 'fines':
             loadFines();
-            loadFineSummary();
             break;
         case 'search':
             loadSearchCategories();
             executeSearch();
             break;
         case 'reports':
-            loadReportsSummary();
-            loadMostIssuedReport();
-            loadOverdueReport();
-            loadFineReport();
-            loadUserActivityReport();
+            loadAllReports();
             break;
         case 'admin':
             loadAdminSettings();
@@ -84,90 +233,230 @@ function showModule(moduleId) {
     }
 }
 
-function loadAllModuleData() {
-    loadUsers();
-    loadBooks();
-    loadActiveIssues();
-    loadFineSummary();
-    loadReportsSummary();
-    loadAdminSettings();
+function refreshCurrentModule() {
+    switchModule(state.currentModule);
+    showToast('Module data refreshed', 'info');
 }
 
-function setupEventListeners() {
-    // User Form
-    document.getElementById('userForm')?.addEventListener('submit', handleUserFormSubmit);
-    
-    // Book Form
-    document.getElementById('bookForm')?.addEventListener('submit', handleBookFormSubmit);
-    
-    // Issue Book Form
-    document.getElementById('issueBookForm')?.addEventListener('submit', handleIssueBookSubmit);
-    
-    // Return Book Form
-    document.getElementById('returnBookForm')?.addEventListener('submit', handleReturnBookSubmit);
-    
-    // Pay Fine Form
-    document.getElementById('payFineForm')?.addEventListener('submit', handlePayFineSubmit);
-    
-    // Search Form
-    document.getElementById('searchQuery')?.addEventListener('input', debounce(executeSearch, 300));
-    document.getElementById('searchCategory')?.addEventListener('change', executeSearch);
-    document.getElementById('inStockOnly')?.addEventListener('change', executeSearch);
-    
-    // Admin Settings Form
-    document.getElementById('adminSettingsForm')?.addEventListener('submit', handleAdminSettingsSubmit);
-}
-
-// -------------------------------------------------------------
-// MODULE 1: USER MANAGEMENT
-// -------------------------------------------------------------
-async function loadUsers() {
+// ------------------------------------------------------------------------------
+// Initial Data Load
+// ------------------------------------------------------------------------------
+async function loadInitialData() {
     try {
-        const res = await fetch(`${API_BASE}/users`);
-        const users = await res.json();
-        allUsersCache = users;
+        await Promise.allSettled([
+            loadAdminSettings(),
+            loadDashboard(),
+            loadUsers(),
+            loadBooks(),
+            loadActiveIssues()
+        ]);
+    } catch (err) {
+        console.error('Initial data load error:', err);
+    }
+}
 
-        const tbody = document.getElementById('userTableBody');
-        if (!tbody) return;
+// ==============================================================================
+// DASHBOARD OVERVIEW
+// ==============================================================================
+async function loadDashboard() {
+    try {
+        const [summary, issues, fines] = await Promise.all([
+            apiClient.get('/reports/summary').catch(() => ({})),
+            apiClient.get('/issues/active').catch(() => []),
+            apiClient.get('/fines/summary').catch(() => ({}))
+        ]);
 
-        if (users.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No users registered yet.</td></tr>`;
-            return;
+        state.reportSummary = summary;
+        state.activeIssues = issues;
+        state.fineSummary = fines;
+
+        // Populate Dashboard 8-module summary metrics
+        document.getElementById('dashTotalUsers').innerText = summary.totalUsers || 0;
+        document.getElementById('dashActiveUsers').innerText = summary.activeUsers || 0;
+        document.getElementById('dashTotalTitles').innerText = summary.totalBookTitles || 0;
+        document.getElementById('dashTotalCopies').innerText = summary.totalCopies || 0;
+        document.getElementById('dashAvailableCopies').innerText = summary.availableCopies || 0;
+        document.getElementById('dashActiveIssues').innerText = summary.activeIssues || 0;
+        document.getElementById('dashReturnedCount').innerText = summary.returnedIssues || 0;
+        document.getElementById('dashOverdueCount').innerText = summary.overdueIssues || 0;
+        document.getElementById('dashPendingFines').innerText = formatCurrency(fines.totalPendingFine || summary.pendingFineAmount || 0);
+        document.getElementById('dashCollectedFines').innerText = formatCurrency(fines.totalCollectedFine || summary.collectedFineAmount || 0);
+
+        // Update Overdue notification badge in topbar
+        const notifBadge = document.getElementById('navNotificationCount');
+        const overdueCount = summary.overdueIssues || 0;
+        if (notifBadge) {
+            if (overdueCount > 0) {
+                notifBadge.innerText = overdueCount;
+                notifBadge.style.display = 'inline-block';
+            } else {
+                notifBadge.style.display = 'none';
+            }
         }
 
-        tbody.innerHTML = users.map(user => `
+        // Calculate and render progress ratios
+        const totalCopies = summary.totalCopies || 1;
+        const issuedCopies = summary.issuedCopies || 0;
+        const circPercent = Math.min(100, Math.round((issuedCopies / totalCopies) * 100));
+        document.getElementById('circPercentText').innerText = `${circPercent}%`;
+        document.getElementById('circIssuedText').innerText = issuedCopies;
+        document.getElementById('circTotalText').innerText = totalCopies;
+        document.getElementById('circProgressBar').style.width = `${circPercent}%`;
+
+        const totalFine = (fines.totalFineAmount || 0);
+        const collectedFine = (fines.totalCollectedFine || 0);
+        const finePercent = totalFine > 0 ? Math.min(100, Math.round((collectedFine / totalFine) * 100)) : 100;
+        document.getElementById('finePercentText').innerText = `${finePercent}%`;
+        document.getElementById('fineCollectedText').innerText = formatCurrency(collectedFine);
+        document.getElementById('fineTotalText').innerText = formatCurrency(totalFine);
+        document.getElementById('fineProgressBar').style.width = `${finePercent}%`;
+
+        const totalUsers = summary.totalUsers || 1;
+        const activeUsers = summary.activeUsers || 0;
+        const userPercent = Math.min(100, Math.round((activeUsers / totalUsers) * 100));
+        document.getElementById('userPercentText').innerText = `${userPercent}%`;
+        document.getElementById('userActiveText').innerText = activeUsers;
+        document.getElementById('userProgressBar').style.width = `${userPercent}%`;
+
+        // Render Recent Issues on Dashboard table
+        renderDashboardIssues(issues);
+    } catch (err) {
+        console.error('Error loading dashboard:', err);
+    }
+}
+
+function renderDashboardIssues(issues) {
+    const tbody = document.getElementById('dashIssuesTableBody');
+    if (!tbody) return;
+
+    const activeList = issues.filter(i => i.status !== 'RETURNED');
+    if (activeList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No books currently borrowed out. All copies on shelf!</td></tr>`;
+        return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    tbody.innerHTML = activeList.slice(0, 6).map(issue => {
+        const isOverdue = issue.dueDate < todayStr;
+        return `
             <tr>
-                <td><strong>#${user.id}</strong></td>
+                <td><strong>#${issue.id}</strong></td>
                 <td>
-                    <div class="fw-semibold">${escapeHtml(user.name)}</div>
-                    <small class="text-muted">${escapeHtml(user.email)}</small>
+                    <div class="fw-semibold">${escapeHtml(issue.user ? issue.user.name : 'Unknown')}</div>
+                    <small class="text-muted">${escapeHtml(issue.user ? issue.user.email : '')}</small>
                 </td>
-                <td>${escapeHtml(user.phone || 'N/A')}</td>
-                <td><span class="badge bg-secondary">${escapeHtml(user.membershipType || 'Student')}</span></td>
                 <td>
-                    <span class="badge ${user.status === 'Active' ? 'badge-active' : 'badge-inactive'}">
-                        ${escapeHtml(user.status || 'Active')}
+                    <div class="fw-semibold">${escapeHtml(issue.book ? issue.book.title : 'Unknown')}</div>
+                    <small class="text-muted">ISBN: ${escapeHtml(issue.book ? issue.book.isbn : '-')}</small>
+                </td>
+                <td>${issue.issueDate}</td>
+                <td class="${isOverdue ? 'text-danger fw-bold' : ''}">${issue.dueDate}</td>
+                <td>
+                    <span class="badge ${isOverdue ? 'badge-soft-danger' : 'badge-soft-primary'}">
+                        ${isOverdue ? 'OVERDUE' : 'ISSUED'}
                     </span>
                 </td>
-                <td>${user.createdDate || '-'}</td>
+                <td class="text-end">
+                    <button class="btn btn-warning btn-sm text-dark py-1 px-2" onclick="openReturnModal(${issue.id})">
+                        <i class="bi bi-arrow-return-left me-1"></i> Return
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// ==============================================================================
+// MODULE 1: USER MANAGEMENT
+// ==============================================================================
+async function loadUsers() {
+    try {
+        const users = await apiClient.get('/users');
+        state.users = users;
+        filterAndRenderUsers();
+    } catch (err) {
+        showToast(`Failed to load users: ${err.message}`, 'danger');
+    }
+}
+
+function filterAndRenderUsers() {
+    const query = document.getElementById('userSearchInput')?.value.toLowerCase().trim() || '';
+    const roleFilter = document.getElementById('userRoleFilter')?.value || 'ALL';
+    const statusFilter = document.getElementById('userStatusFilter')?.value || 'ALL';
+
+    let filtered = state.users.filter(u => {
+        const matchesQuery = !query || 
+            (u.name && u.name.toLowerCase().includes(query)) || 
+            (u.email && u.email.toLowerCase().includes(query)) ||
+            (u.phone && u.phone.includes(query));
+        
+        const matchesRole = (roleFilter === 'ALL') || (u.membershipType === roleFilter);
+        const matchesStatus = (statusFilter === 'ALL') || (u.status === statusFilter);
+
+        return matchesQuery && matchesRole && matchesStatus;
+    });
+
+    const tbody = document.getElementById('userTableBody');
+    const countBadge = document.getElementById('userTableCount');
+    if (countBadge) countBadge.innerText = filtered.length;
+    if (!tbody) return;
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No users found matching the filter criteria.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(u => {
+        const initials = u.name ? u.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'U';
+        const isActive = (u.status || 'Active').toLowerCase() === 'active';
+
+        return `
+            <tr>
+                <td><strong>#${u.id}</strong></td>
                 <td>
-                    <button class="btn btn-outline-primary btn-sm btn-action me-1" onclick="openEditUserModal(${user.id})" title="Edit User">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avatar-initial">${initials}</div>
+                        <div>
+                            <div class="fw-bold">${escapeHtml(u.name)}</div>
+                            <small class="text-muted">${escapeHtml(u.email)}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>${escapeHtml(u.phone || 'N/A')}</td>
+                <td>
+                    <span class="badge ${u.membershipType === 'Faculty' ? 'bg-indigo text-white' : 'badge-soft-secondary'}">
+                        ${escapeHtml(u.membershipType || 'Student')}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge ${isActive ? 'badge-soft-success' : 'badge-soft-danger'}">
+                        ${isActive ? 'Active' : 'Inactive'}
+                    </span>
+                </td>
+                <td>${u.createdDate || '-'}</td>
+                <td class="text-end">
+                    <button class="btn-action-icon me-1" onclick="openEditUserModal(${u.id})" title="Edit Member">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-outline-danger btn-sm btn-action" onclick="deleteUser(${user.id})" title="Delete User">
+                    <button class="btn-action-icon me-1 ${isActive ? 'btn-danger-hover' : 'btn-success-hover'}" 
+                            onclick="toggleUserStatus(${u.id}, '${u.status}')" 
+                            title="${isActive ? 'Deactivate Member' : 'Activate Member'}">
+                        <i class="bi ${isActive ? 'bi-person-slash' : 'bi-person-check'}"></i>
+                    </button>
+                    <button class="btn-action-icon btn-danger-hover" onclick="confirmDeleteUser(${u.id})" title="Delete Member">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
             </tr>
-        `).join('');
+        `;
+    }).join('');
+}
 
-        // Update counts
-        const activeCount = users.filter(u => u.status === 'Active').length;
-        document.getElementById('userCountTotal').innerText = users.length;
-        document.getElementById('userCountActive').innerText = activeCount;
-    } catch (err) {
-        console.error('Error loading users:', err);
-    }
+function clearUserSearch() {
+    const input = document.getElementById('userSearchInput');
+    if (input) input.value = '';
+    filterAndRenderUsers();
 }
 
 function openAddUserModal() {
@@ -182,7 +471,7 @@ function openAddUserModal() {
 }
 
 function openEditUserModal(id) {
-    const user = allUsersCache.find(u => u.id === id);
+    const user = state.users.find(u => u.id === id);
     if (!user) return;
 
     document.getElementById('userModalTitle').innerText = 'Edit Member Details';
@@ -198,7 +487,7 @@ function openEditUserModal(id) {
 async function handleUserFormSubmit(e) {
     e.preventDefault();
     const id = document.getElementById('userId').value;
-    const userData = {
+    const payload = {
         name: document.getElementById('userName').value.trim(),
         email: document.getElementById('userEmail').value.trim(),
         phone: document.getElementById('userPhone').value.trim(),
@@ -206,105 +495,168 @@ async function handleUserFormSubmit(e) {
         status: document.getElementById('userStatus').value
     };
 
+    const submitBtn = document.getElementById('btnUserSubmit');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Saving...`;
+
     try {
-        const url = id ? `${API_BASE}/users/${id}` : `${API_BASE}/users`;
-        const method = id ? 'PUT' : 'POST';
-
-        const res = await fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userData)
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
-            showToast(id ? 'User updated successfully!' : 'New user created successfully!', 'success');
-            loadUsers();
+        if (id) {
+            await apiClient.put(`/users/${id}`, payload);
+            showToast('Member details updated successfully!', 'success');
         } else {
-            showToast(data.error || 'Failed to save user', 'danger');
+            await apiClient.post('/users', payload);
+            showToast('New member registered successfully!', 'success');
         }
+
+        bootstrap.Modal.getInstance(document.getElementById('userModal'))?.hide();
+        await loadUsers();
+        loadDashboard();
     } catch (err) {
-        showToast('Network error while saving user', 'danger');
+        showToast(err.message, 'danger');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Save Member';
     }
 }
 
-async function deleteUser(id) {
-    if (!confirm(`Are you sure you want to delete user #${id}?`)) return;
+async function toggleUserStatus(id, currentStatus) {
+    const newStatus = (currentStatus === 'Active') ? 'Inactive' : 'Active';
+    const actionWord = (newStatus === 'Active') ? 'activate' : 'deactivate';
 
-    try {
-        const res = await fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' });
-        const data = await res.json();
-        if (res.ok && data.success) {
-            showToast('User deleted successfully!', 'success');
-            loadUsers();
-        } else {
-            showToast(data.error || 'Failed to delete user', 'danger');
+    showConfirmModal(
+        `${actionWord.toUpperCase()} User`,
+        `Are you sure you want to ${actionWord} this member? ${newStatus === 'Inactive' ? 'Inactive users cannot borrow books.' : ''}`,
+        async () => {
+            try {
+                const user = state.users.find(u => u.id === id);
+                if (!user) return;
+                await apiClient.put(`/users/${id}`, { ...user, status: newStatus });
+                showToast(`User status set to ${newStatus}`, 'success');
+                await loadUsers();
+                loadDashboard();
+            } catch (err) {
+                showToast(err.message, 'danger');
+            }
         }
-    } catch (err) {
-        showToast('Network error while deleting user', 'danger');
-    }
+    );
 }
 
-// -------------------------------------------------------------
+function confirmDeleteUser(id) {
+    showConfirmModal(
+        'Delete Member',
+        `Are you sure you want to permanently delete member #${id}? This will remove all borrowing associations.`,
+        async () => {
+            try {
+                await apiClient.delete(`/users/${id}`);
+                showToast('User deleted successfully!', 'success');
+                await loadUsers();
+                loadDashboard();
+            } catch (err) {
+                showToast(err.message, 'danger');
+            }
+        }
+    );
+}
+
+// ==============================================================================
 // MODULE 2: BOOK MANAGEMENT
-// -------------------------------------------------------------
+// ==============================================================================
 async function loadBooks() {
     try {
-        const res = await fetch(`${API_BASE}/books`);
-        const books = await res.json();
-        allBooksCache = books;
+        const books = await apiClient.get('/books');
+        state.books = books;
+        populateCategoryFilter(books);
+        filterAndRenderBooks();
+    } catch (err) {
+        showToast(`Failed to load books: ${err.message}`, 'danger');
+    }
+}
 
-        const tbody = document.getElementById('bookTableBody');
-        if (!tbody) return;
+function populateCategoryFilter(books) {
+    const select = document.getElementById('bookCategoryFilter');
+    if (!select) return;
 
-        if (books.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">No books in catalog yet.</td></tr>`;
-            return;
+    const currentVal = select.value;
+    const cats = Array.from(new Set(books.map(b => b.category).filter(Boolean))).sort();
+
+    select.innerHTML = '<option value="ALL">All Categories</option>' +
+        cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+
+    if (cats.includes(currentVal)) {
+        select.value = currentVal;
+    }
+}
+
+function filterAndRenderBooks() {
+    const query = document.getElementById('bookSearchInput')?.value.toLowerCase().trim() || '';
+    const category = document.getElementById('bookCategoryFilter')?.value || 'ALL';
+
+    let filtered = state.books.filter(b => {
+        const matchesQuery = !query ||
+            (b.title && b.title.toLowerCase().includes(query)) ||
+            (b.author && b.author.toLowerCase().includes(query)) ||
+            (b.isbn && b.isbn.toLowerCase().includes(query)) ||
+            (b.category && b.category.toLowerCase().includes(query));
+
+        const matchesCat = (category === 'ALL') || (b.category === category);
+        return matchesQuery && matchesCat;
+    });
+
+    const tbody = document.getElementById('bookTableBody');
+    document.getElementById('bookTotalTitlesBadge').innerText = state.books.length;
+    const availableTotal = state.books.reduce((acc, b) => acc + (b.availableCopies || 0), 0);
+    document.getElementById('bookInStockBadge').innerText = availableTotal;
+
+    if (!tbody) return;
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">No books found matching the filter criteria.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(b => {
+        const isAvailable = (b.availableCopies || 0) > 0;
+        let stockBadge = `<span class="badge badge-soft-success">In Stock (${b.availableCopies})</span>`;
+        if (b.availableCopies === 1) {
+            stockBadge = `<span class="badge badge-soft-warning">Low Stock (1)</span>`;
+        } else if (b.availableCopies <= 0) {
+            stockBadge = `<span class="badge badge-soft-danger">Out of Stock</span>`;
         }
 
-        tbody.innerHTML = books.map(book => `
+        return `
             <tr>
-                <td><strong>#${book.id}</strong></td>
+                <td><strong>#${b.id}</strong></td>
                 <td>
-                    <div class="fw-semibold">${escapeHtml(book.title)}</div>
-                    <small class="text-muted">ISBN: ${escapeHtml(book.isbn)}</small>
+                    <div class="fw-bold">${escapeHtml(b.title)}</div>
+                    <small class="text-muted"><i class="bi bi-upc-scan me-1"></i>ISBN: ${escapeHtml(b.isbn)}</small>
                 </td>
-                <td>${escapeHtml(book.author)}</td>
-                <td><span class="badge bg-light text-dark border">${escapeHtml(book.category)}</span></td>
-                <td><small class="text-muted"><i class="bi bi-geo-alt"></i> ${escapeHtml(book.rackNumber || 'N/A')}</small></td>
-                <td>
-                    <span class="badge ${book.availableCopies > 0 ? 'badge-active' : 'badge-inactive'}">
-                        ${book.availableCopies} / ${book.totalCopies} Available
-                    </span>
-                </td>
-                <td>$${Number(book.price || 0).toFixed(2)}</td>
-                <td>
-                    <button class="btn btn-outline-primary btn-sm btn-action me-1" onclick="openEditBookModal(${book.id})" title="Edit Book">
+                <td>${escapeHtml(b.author)}</td>
+                <td><span class="badge badge-soft-primary">${escapeHtml(b.category)}</span></td>
+                <td><small><i class="bi bi-geo-alt text-muted me-1"></i>${escapeHtml(b.rackNumber || 'General')}</small></td>
+                <td><strong>${b.availableCopies}</strong> / ${b.totalCopies}</td>
+                <td>₹${Number(b.price || 0).toFixed(2)}</td>
+                <td>${stockBadge}</td>
+                <td class="text-end">
+                    <button class="btn-action-icon me-1" onclick="openEditBookModal(${b.id})" title="Edit Book">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-outline-danger btn-sm btn-action" onclick="deleteBook(${book.id})" title="Delete Book">
+                    <button class="btn-action-icon btn-danger-hover" onclick="confirmDeleteBook(${b.id})" title="Delete Book">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
             </tr>
-        `).join('');
+        `;
+    }).join('');
+}
 
-        // Update counts
-        const totalTitles = books.length;
-        const totalCopies = books.reduce((acc, b) => acc + (b.totalCopies || 0), 0);
-        const availableCopies = books.reduce((acc, b) => acc + (b.availableCopies || 0), 0);
-
-        document.getElementById('bookCountTitles').innerText = totalTitles;
-        document.getElementById('bookCountCopies').innerText = totalCopies;
-        document.getElementById('bookCountAvailable').innerText = availableCopies;
-    } catch (err) {
-        console.error('Error loading books:', err);
-    }
+function clearBookSearch() {
+    const input = document.getElementById('bookSearchInput');
+    if (input) input.value = '';
+    filterAndRenderBooks();
 }
 
 function openAddBookModal() {
-    document.getElementById('bookModalTitle').innerText = 'Add New Book';
+    document.getElementById('bookModalTitle').innerText = 'Add New Book to Catalog';
     document.getElementById('bookId').value = '';
     document.getElementById('bookTitle').value = '';
     document.getElementById('bookAuthor').value = '';
@@ -313,12 +665,12 @@ function openAddBookModal() {
     document.getElementById('bookPublisher').value = '';
     document.getElementById('bookRackNumber').value = '';
     document.getElementById('bookTotalCopies').value = '3';
-    document.getElementById('bookPrice').value = '25.00';
+    document.getElementById('bookPrice').value = '29.99';
     new bootstrap.Modal(document.getElementById('bookModal')).show();
 }
 
 function openEditBookModal(id) {
-    const book = allBooksCache.find(b => b.id === id);
+    const book = state.books.find(b => b.id === id);
     if (!book) return;
 
     document.getElementById('bookModalTitle').innerText = 'Edit Book Details';
@@ -337,7 +689,7 @@ function openEditBookModal(id) {
 async function handleBookFormSubmit(e) {
     e.preventDefault();
     const id = document.getElementById('bookId').value;
-    const bookData = {
+    const payload = {
         title: document.getElementById('bookTitle').value.trim(),
         author: document.getElementById('bookAuthor').value.trim(),
         isbn: document.getElementById('bookIsbn').value.trim(),
@@ -348,285 +700,377 @@ async function handleBookFormSubmit(e) {
         price: parseFloat(document.getElementById('bookPrice').value)
     };
 
+    const submitBtn = document.getElementById('btnBookSubmit');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Saving...`;
+
     try {
-        const url = id ? `${API_BASE}/books/${id}` : `${API_BASE}/books`;
-        const method = id ? 'PUT' : 'POST';
-
-        const res = await fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(bookData)
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('bookModal')).hide();
-            showToast(id ? 'Book updated successfully!' : 'Book added to catalog successfully!', 'success');
-            loadBooks();
+        if (id) {
+            await apiClient.put(`/books/${id}`, payload);
+            showToast('Book details updated successfully!', 'success');
         } else {
-            showToast(data.error || 'Failed to save book', 'danger');
+            await apiClient.post('/books', payload);
+            showToast('New book added to library catalog!', 'success');
         }
+
+        bootstrap.Modal.getInstance(document.getElementById('bookModal'))?.hide();
+        await loadBooks();
+        loadDashboard();
     } catch (err) {
-        showToast('Network error while saving book', 'danger');
+        showToast(err.message, 'danger');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Save Book';
     }
 }
 
-async function deleteBook(id) {
-    if (!confirm(`Are you sure you want to delete book #${id}?`)) return;
-
-    try {
-        const res = await fetch(`${API_BASE}/books/${id}`, { method: 'DELETE' });
-        const data = await res.json();
-        if (res.ok && data.success) {
-            showToast('Book removed from catalog!', 'success');
-            loadBooks();
-        } else {
-            showToast(data.error || 'Failed to delete book', 'danger');
+function confirmDeleteBook(id) {
+    showConfirmModal(
+        'Delete Book',
+        `Are you sure you want to remove book #${id} from the catalog? This action cannot be undone.`,
+        async () => {
+            try {
+                await apiClient.delete(`/books/${id}`);
+                showToast('Book deleted successfully!', 'success');
+                await loadBooks();
+                loadDashboard();
+            } catch (err) {
+                showToast(err.message, 'danger');
+            }
         }
-    } catch (err) {
-        showToast('Network error while deleting book', 'danger');
-    }
+    );
 }
 
-// -------------------------------------------------------------
+// ==============================================================================
 // MODULE 3: BOOK ISSUE
-// -------------------------------------------------------------
-async function loadIssueFormOptions() {
-    // Populate Active Users Dropdown
+// ==============================================================================
+async function loadIssueDesk() {
+    await Promise.all([
+        populateIssueDropdowns(),
+        loadActiveIssues()
+    ]);
+}
+
+async function populateIssueDropdowns() {
     try {
-        const resUsers = await fetch(`${API_BASE}/users/active`);
-        const users = await resUsers.json();
+        const [activeUsers, availableBooks] = await Promise.all([
+            apiClient.get('/users/active'),
+            apiClient.get('/books/available')
+        ]);
+
         const userSelect = document.getElementById('issueUserId');
         if (userSelect) {
             userSelect.innerHTML = '<option value="">-- Choose Active Member --</option>' +
-                users.map(u => `<option value="${u.id}">#${u.id} - ${escapeHtml(u.name)} (${escapeHtml(u.membershipType)})</option>`).join('');
+                activeUsers.map(u => `<option value="${u.id}">#${u.id} - ${escapeHtml(u.name)} (${escapeHtml(u.membershipType)})</option>`).join('');
         }
 
-        // Populate Available Books Dropdown
-        const resBooks = await fetch(`${API_BASE}/books/available`);
-        const books = await resBooks.json();
         const bookSelect = document.getElementById('issueBookId');
         if (bookSelect) {
             bookSelect.innerHTML = '<option value="">-- Choose Book in Stock --</option>' +
-                books.map(b => `<option value="${b.id}">#${b.id} - ${escapeHtml(b.title)} [Stock: ${b.availableCopies}]</option>`).join('');
+                availableBooks.map(b => `<option value="${b.id}">#${b.id} - ${escapeHtml(b.title)} [${b.availableCopies} in stock]</option>`).join('');
         }
+
+        updateIssueDueDatePreview();
     } catch (err) {
-        console.error('Error loading issue options:', err);
+        console.error('Error populating issue dropdowns:', err);
     }
+}
+
+function updateIssueDueDatePreview() {
+    const loanDaysInput = document.getElementById('issueLoanDays');
+    const preview = document.getElementById('issueDueDatePreview');
+    if (!loanDaysInput || !preview) return;
+
+    const days = parseInt(loanDaysInput.value, 10) || 14;
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    preview.innerText = date.toISOString().split('T')[0];
 }
 
 async function loadActiveIssues() {
     try {
-        const res = await fetch(`${API_BASE}/issues/active`);
-        const issues = await res.json();
-        activeIssuesCache = issues;
-
-        const tbody = document.getElementById('activeIssuesTableBody');
-        if (!tbody) return;
-
-        const activeOnly = issues.filter(i => i.status !== 'RETURNED');
-        if (activeOnly.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No books currently issued out.</td></tr>`;
-            return;
-        }
-
-        const today = new Date().toISOString().split('T')[0];
-
-        tbody.innerHTML = activeOnly.map(issue => {
-            const isOverdue = issue.dueDate < today;
-            const badgeClass = isOverdue ? 'badge-overdue' : 'badge-issued';
-            const statusText = isOverdue ? 'OVERDUE' : 'ISSUED';
-
-            return `
-                <tr>
-                    <td><strong>#${issue.id}</strong></td>
-                    <td>
-                        <div class="fw-semibold">${escapeHtml(issue.user.name)}</div>
-                        <small class="text-muted">ID: #${issue.user.id} | ${escapeHtml(issue.user.email)}</small>
-                    </td>
-                    <td>
-                        <div class="fw-semibold">${escapeHtml(issue.book.title)}</div>
-                        <small class="text-muted">ISBN: ${escapeHtml(issue.book.isbn)}</small>
-                    </td>
-                    <td>${issue.issueDate}</td>
-                    <td class="${isOverdue ? 'text-danger fw-bold' : ''}">${issue.dueDate}</td>
-                    <td><span class="badge ${badgeClass}">${statusText}</span></td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" onclick="quickReturnSelect(${issue.id})" title="Return this book">
-                            <i class="bi bi-arrow-return-left"></i> Return
-                        </button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-
-        document.getElementById('activeIssueCount').innerText = activeOnly.length;
+        const issues = await apiClient.get('/issues/active');
+        state.activeIssues = issues;
+        renderActiveIssuesTable(issues);
+        renderReturnDeskTable(issues);
     } catch (err) {
         console.error('Error loading active issues:', err);
     }
 }
 
+function renderActiveIssuesTable(issues) {
+    const tbody = document.getElementById('activeIssuesTableBody');
+    const badge = document.getElementById('activeIssuesCountBadge');
+    if (!tbody) return;
+
+    const activeList = issues.filter(i => i.status !== 'RETURNED');
+    if (badge) badge.innerText = `${activeList.length} Active`;
+
+    if (activeList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No books currently issued out.</td></tr>`;
+        return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    tbody.innerHTML = activeList.map(i => {
+        const isOverdue = i.dueDate < todayStr;
+        return `
+            <tr>
+                <td><strong>#${i.id}</strong></td>
+                <td>
+                    <div class="fw-bold">${escapeHtml(i.user ? i.user.name : '-')}</div>
+                    <small class="text-muted">User #${i.user ? i.user.id : ''}</small>
+                </td>
+                <td>
+                    <div class="fw-semibold">${escapeHtml(i.book ? i.book.title : '-')}</div>
+                    <small class="text-muted">Book #${i.book ? i.book.id : ''}</small>
+                </td>
+                <td>${i.issueDate}</td>
+                <td class="${isOverdue ? 'text-danger fw-bold' : ''}">${i.dueDate}</td>
+                <td>
+                    <span class="badge ${isOverdue ? 'badge-soft-danger' : 'badge-soft-primary'}">
+                        ${isOverdue ? 'OVERDUE' : 'ISSUED'}
+                    </span>
+                </td>
+                <td class="text-end">
+                    <button class="btn btn-warning btn-sm text-dark py-1 px-2" onclick="openReturnModal(${i.id})">
+                        <i class="bi bi-arrow-return-left me-1"></i> Return
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
 async function handleIssueBookSubmit(e) {
     e.preventDefault();
-    const payload = {
-        userId: document.getElementById('issueUserId').value,
-        bookId: document.getElementById('issueBookId').value,
-        loanDays: parseInt(document.getElementById('issueLoanDays').value, 10),
-        remarks: document.getElementById('issueRemarks').value.trim()
-    };
+    const userId = document.getElementById('issueUserId').value;
+    const bookId = document.getElementById('issueBookId').value;
+    const loanDays = parseInt(document.getElementById('issueLoanDays').value, 10);
+    const remarks = document.getElementById('issueRemarks').value.trim();
 
-    if (!payload.userId || !payload.bookId) {
-        showToast('Please select both a member and a book.', 'warning');
+    if (!userId || !bookId) {
+        showToast('Please select both a registered member and an available book.', 'warning');
         return;
     }
 
-    try {
-        const res = await fetch(`${API_BASE}/issues`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+    const submitBtn = document.getElementById('btnIssueSubmit');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Processing...`;
 
-        const data = await res.json();
-        if (res.ok) {
-            showToast(`Book successfully issued to ${data.user.name}! Due Date: ${data.dueDate}`, 'success');
-            document.getElementById('issueBookForm').reset();
-            loadIssueFormOptions();
-            loadActiveIssues();
-            loadBooks(); // refresh stock numbers
-        } else {
-            showToast(data.error || 'Failed to issue book', 'danger');
-        }
+    try {
+        const result = await apiClient.post('/issues', { userId, bookId, loanDays, remarks });
+        showToast(`Book issued successfully to ${result.user.name}! Due date: ${result.dueDate}`, 'success');
+
+        document.getElementById('issueBookForm').reset();
+        document.getElementById('issueLoanDays').value = 14;
+        updateIssueDueDatePreview();
+
+        await loadIssueDesk();
+        loadBooks();
+        loadDashboard();
     } catch (err) {
-        showToast('Network error while issuing book', 'danger');
+        showToast(err.message, 'danger');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="bi bi-check2-circle me-1"></i> Confirm & Issue Book`;
     }
 }
 
-// -------------------------------------------------------------
+// ==============================================================================
 // MODULE 4: BOOK RETURN
-// -------------------------------------------------------------
-async function loadReturnIssueOptions() {
-    try {
-        const res = await fetch(`${API_BASE}/issues/active`);
-        const issues = await res.json();
-        const activeOnly = issues.filter(i => i.status !== 'RETURNED');
-
-        const select = document.getElementById('returnIssueSelect');
-        if (select) {
-            select.innerHTML = '<option value="">-- Select Active Issue Transaction --</option>' +
-                activeOnly.map(i => `<option value="${i.id}">#${i.id} - ${escapeHtml(i.book.title)} (Member: ${escapeHtml(i.user.name)})</option>`).join('');
-        }
-    } catch (err) {
-        console.error('Error loading return issue options:', err);
-    }
+// ==============================================================================
+async function loadReturnDesk() {
+    await Promise.all([
+        loadActiveIssues(),
+        loadReturnHistory()
+    ]);
 }
 
-function onReturnIssueSelected() {
-    const issueId = document.getElementById('returnIssueSelect').value;
-    const previewBox = document.getElementById('returnCalcPreview');
+function renderReturnDeskTable(issues) {
+    const tbody = document.getElementById('returnDeskTableBody');
+    const searchVal = document.getElementById('returnSearchInput')?.value.toLowerCase().trim() || '';
+    if (!tbody) return;
 
-    if (!issueId) {
-        previewBox.classList.add('d-none');
+    let activeList = issues.filter(i => i.status !== 'RETURNED');
+    if (searchVal) {
+        activeList = activeList.filter(i => 
+            (i.user && i.user.name && i.user.name.toLowerCase().includes(searchVal)) ||
+            (i.book && i.book.title && i.book.title.toLowerCase().includes(searchVal)) ||
+            String(i.id).includes(searchVal)
+        );
+    }
+
+    if (activeList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">No active borrowings waiting for return.</td></tr>`;
         return;
     }
 
-    const issue = activeIssuesCache.find(i => i.id == issueId);
-    if (!issue) return;
+    const todayStr = new Date().toISOString().split('T')[0];
+    const today = new Date(todayStr);
+
+    tbody.innerHTML = activeList.map(i => {
+        const dueDate = new Date(i.dueDate);
+        const diffTime = today - dueDate;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const overdueDays = diffDays > 0 ? diffDays : 0;
+
+        return `
+            <tr>
+                <td><strong>#${i.id}</strong></td>
+                <td>
+                    <div class="fw-bold">${escapeHtml(i.user ? i.user.name : '-')}</div>
+                    <small class="text-muted">User #${i.user ? i.user.id : ''} | ${escapeHtml(i.user ? i.user.email : '')}</small>
+                </td>
+                <td>
+                    <div class="fw-semibold">${escapeHtml(i.book ? i.book.title : '-')}</div>
+                    <small class="text-muted">ISBN: ${escapeHtml(i.book ? i.book.isbn : '')}</small>
+                </td>
+                <td>${i.issueDate}</td>
+                <td class="${overdueDays > 0 ? 'text-danger fw-bold' : ''}">${i.dueDate}</td>
+                <td>
+                    <span class="badge ${overdueDays > 0 ? 'badge-soft-danger' : 'badge-soft-success'}">
+                        ${overdueDays > 0 ? `${overdueDays} days late` : 'On Time'}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge ${overdueDays > 0 ? 'badge-soft-danger' : 'badge-soft-primary'}">
+                        ${overdueDays > 0 ? 'OVERDUE' : 'ISSUED'}
+                    </span>
+                </td>
+                <td class="text-end">
+                    <button class="btn btn-warning btn-sm text-dark fw-semibold" onclick="openReturnModal(${i.id})">
+                        <i class="bi bi-arrow-return-left me-1"></i> Return Book
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function openReturnModal(issueId) {
+    const issue = state.activeIssues.find(i => i.id === issueId);
+    if (!issue) {
+        showToast('Issue record not found.', 'danger');
+        return;
+    }
 
     const todayStr = new Date().toISOString().split('T')[0];
     const dueDate = new Date(issue.dueDate);
     const today = new Date(todayStr);
-
     const diffTime = today - dueDate;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const overdueDays = diffDays > 0 ? diffDays : 0;
-    const finePerDay = 5.0; // standard default
-    const estFine = overdueDays * finePerDay;
+    const fineRate = state.settings.fineRatePerDay || 5.0;
+    const fineEst = overdueDays * fineRate;
 
-    document.getElementById('previewBookTitle').innerText = issue.book.title;
-    document.getElementById('previewUserName').innerText = issue.user.name;
-    document.getElementById('previewIssueDate').innerText = issue.issueDate;
-    document.getElementById('previewDueDate').innerText = issue.dueDate;
-    document.getElementById('previewOverdueDays').innerText = `${overdueDays} days`;
-    document.getElementById('previewFineAmount').innerText = `$${estFine.toFixed(2)}`;
+    document.getElementById('returnIssueId').value = issue.id;
+    document.getElementById('returnModalBookTitle').innerText = issue.book ? issue.book.title : 'Book';
+    document.getElementById('returnModalUserName').innerText = issue.user ? issue.user.name : 'User';
+    document.getElementById('returnModalIssueDate').innerText = issue.issueDate;
+    document.getElementById('returnModalDueDate').innerText = issue.dueDate;
+    document.getElementById('returnModalOverdueDays').innerText = `${overdueDays} days late`;
+    document.getElementById('returnModalFineEst').innerText = formatCurrency(fineEst);
 
     if (overdueDays > 0) {
-        document.getElementById('previewFineAmount').className = 'text-danger fw-bold fs-5';
+        document.getElementById('returnModalFineEst').className = 'fs-5 fw-bold text-danger';
+        document.getElementById('returnModalOverdueDays').className = 'badge bg-danger';
     } else {
-        document.getElementById('previewFineAmount').className = 'text-success fw-bold fs-5';
+        document.getElementById('returnModalFineEst').className = 'fs-5 fw-bold text-success';
+        document.getElementById('returnModalOverdueDays').className = 'badge bg-success';
     }
 
-    previewBox.classList.remove('d-none');
+    document.getElementById('returnModalRemarks').value = overdueDays > 0 
+        ? `Returned ${overdueDays} days late` 
+        : 'Returned on time in good condition';
+
+    new bootstrap.Modal(document.getElementById('returnModal')).show();
 }
 
-function quickReturnSelect(issueId) {
-    showModule('return');
-    setTimeout(() => {
-        const select = document.getElementById('returnIssueSelect');
-        if (select) {
-            select.value = issueId;
-            onReturnIssueSelected();
-        }
-    }, 200);
-}
-
-async function handleReturnBookSubmit(e) {
+async function handleReturnConfirmSubmit(e) {
     e.preventDefault();
-    const issueId = document.getElementById('returnIssueSelect').value;
-    const remarks = document.getElementById('returnRemarks').value.trim();
+    const issueId = document.getElementById('returnIssueId').value;
+    const remarks = document.getElementById('returnModalRemarks').value.trim();
 
-    if (!issueId) {
-        showToast('Please select an active issue record to return.', 'warning');
-        return;
-    }
+    const submitBtn = document.getElementById('btnReturnConfirmSubmit');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Processing...`;
 
     try {
-        const res = await fetch(`${API_BASE}/returns`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ issueId, remarks })
-        });
+        const result = await apiClient.post('/returns', { issueId, remarks });
+        bootstrap.Modal.getInstance(document.getElementById('returnModal'))?.hide();
 
-        const data = await res.json();
-        if (res.ok && data.success) {
-            showToast(data.message, data.fineAmount > 0 ? 'warning' : 'success');
-            document.getElementById('returnBookForm').reset();
-            document.getElementById('returnCalcPreview').classList.add('d-none');
-            loadReturnIssueOptions();
-            loadReturnHistory();
-            loadActiveIssues();
-            loadBooks(); // refresh stock
-            loadFineSummary();
-        } else {
-            showToast(data.error || 'Failed to process return', 'danger');
-        }
+        state.lastReturnResult = result;
+        showReturnResultModal(result);
+
+        await Promise.all([
+            loadActiveIssues(),
+            loadReturnHistory(),
+            loadBooks(),
+            loadFines(),
+            loadDashboard()
+        ]);
     } catch (err) {
-        showToast('Network error while processing return', 'danger');
+        showToast(err.message, 'danger');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="bi bi-check2-circle me-1"></i> Process Return`;
+    }
+}
+
+function showReturnResultModal(result) {
+    document.getElementById('returnResultTitle').innerText = `Book Returned: "${escapeHtml(result.bookTitle)}"`;
+    document.getElementById('returnResultMessage').innerText = result.message || 'Book check-in completed successfully.';
+
+    const fineBox = document.getElementById('returnResultFineBox');
+    const payBtn = document.getElementById('btnGoToFinePay');
+
+    if (result.fineAmount && result.fineAmount > 0) {
+        fineBox.classList.remove('d-none');
+        payBtn.classList.remove('d-none');
+        document.getElementById('returnResultOverdueDays').innerText = `${result.overdueDays} days`;
+        document.getElementById('returnResultFineAmount').innerText = formatCurrency(result.fineAmount);
+    } else {
+        fineBox.classList.add('d-none');
+        payBtn.classList.add('d-none');
+    }
+
+    new bootstrap.Modal(document.getElementById('returnResultModal')).show();
+}
+
+function goToFinePayFromReturn() {
+    bootstrap.Modal.getInstance(document.getElementById('returnResultModal'))?.hide();
+    switchModule('fines');
+    if (state.lastReturnResult && state.lastReturnResult.fineId) {
+        setTimeout(() => {
+            openPayFineModal(state.lastReturnResult.fineId, state.lastReturnResult.fineAmount);
+        }, 300);
     }
 }
 
 async function loadReturnHistory() {
     try {
-        const res = await fetch(`${API_BASE}/returns/history`);
-        const history = await res.json();
+        const history = await apiClient.get('/returns/history');
+        state.returnHistory = history;
 
         const tbody = document.getElementById('returnHistoryTableBody');
         if (!tbody) return;
 
         if (history.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No return records yet.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No books returned yet.</td></tr>`;
             return;
         }
 
-        tbody.innerHTML = history.map(item => `
+        tbody.innerHTML = history.slice(0, 10).map(h => `
             <tr>
-                <td><strong>#${item.id}</strong></td>
-                <td>${escapeHtml(item.user.name)}</td>
-                <td>${escapeHtml(item.book.title)}</td>
-                <td>${item.issueDate}</td>
-                <td>${item.dueDate}</td>
-                <td class="text-success fw-bold">${item.returnDate || '-'}</td>
-                <td><span class="badge badge-returned">RETURNED</span></td>
+                <td><strong>#${h.id}</strong></td>
+                <td>${escapeHtml(h.user ? h.user.name : '-')}</td>
+                <td>${escapeHtml(h.book ? h.book.title : '-')}</td>
+                <td>${h.issueDate}</td>
+                <td>${h.dueDate}</td>
+                <td class="text-success fw-bold">${h.returnDate || '-'}</td>
+                <td><span class="badge badge-soft-success">RETURNED</span></td>
             </tr>
         `).join('');
     } catch (err) {
@@ -634,93 +1078,106 @@ async function loadReturnHistory() {
     }
 }
 
-// -------------------------------------------------------------
+// ==============================================================================
 // MODULE 5: FINE MANAGEMENT
-// -------------------------------------------------------------
-let allFinesCache = [];
+// ==============================================================================
+let currentFineFilter = 'ALL';
 
 async function loadFines() {
     try {
-        const res = await fetch(`${API_BASE}/fines`);
-        const fines = await res.json();
-        allFinesCache = fines;
-        renderFineTable(fines);
+        const [fines, summary] = await Promise.all([
+            apiClient.get('/fines'),
+            apiClient.get('/fines/summary')
+        ]);
+
+        state.fines = fines;
+        state.fineSummary = summary;
+
+        document.getElementById('fineMetricTotal').innerText = formatCurrency(summary.totalFineAmount || 0);
+        document.getElementById('fineMetricCollected').innerText = formatCurrency(summary.totalCollectedFine || 0);
+        document.getElementById('fineMetricPending').innerText = formatCurrency(summary.totalPendingFine || 0);
+        document.getElementById('fineMetricUnpaidCount').innerText = summary.unpaidCount || 0;
+
+        renderFinesTable();
     } catch (err) {
-        console.error('Error loading fines:', err);
+        showToast(`Failed to load fines: ${err.message}`, 'danger');
     }
 }
 
-function renderFineTable(fines) {
+function setFineFilter(status) {
+    currentFineFilter = status;
+    ['All', 'Unpaid', 'Paid', 'Waived'].forEach(s => {
+        const btn = document.getElementById(`btnFilterFine${s}`);
+        if (btn) {
+            if (s.toUpperCase() === status) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+    });
+    renderFinesTable();
+}
+
+function renderFinesTable() {
     const tbody = document.getElementById('fineTableBody');
     if (!tbody) return;
 
-    if (fines.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">No fine records found.</td></tr>`;
+    let filtered = state.fines;
+    if (currentFineFilter !== 'ALL') {
+        filtered = filtered.filter(f => f.status === currentFineFilter);
+    }
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">No fines found matching status "${currentFineFilter}".</td></tr>`;
         return;
     }
 
-    tbody.innerHTML = fines.map(fine => {
-        let badgeClass = 'badge-unpaid';
-        if (fine.status === 'PAID') badgeClass = 'badge-paid';
-        if (fine.status === 'WAIVED') badgeClass = 'badge-waived';
+    tbody.innerHTML = filtered.map(f => {
+        let badgeClass = 'badge-soft-warning';
+        if (f.status === 'PAID') badgeClass = 'badge-soft-success';
+        if (f.status === 'WAIVED') badgeClass = 'badge-soft-secondary';
+
+        const isUnpaid = f.status === 'UNPAID';
 
         return `
             <tr>
-                <td><strong>#${fine.id}</strong></td>
+                <td><strong>#${f.id}</strong></td>
                 <td>
-                    <div class="fw-semibold">${escapeHtml(fine.user ? fine.user.name : 'N/A')}</div>
-                    <small class="text-muted">Issue #${fine.bookIssue ? fine.bookIssue.id : '-'}</small>
+                    <div class="fw-bold">${escapeHtml(f.user ? f.user.name : '-')}</div>
+                    <small class="text-muted">Issue #${f.bookIssue ? f.bookIssue.id : '-'}</small>
                 </td>
-                <td>${fine.bookIssue && fine.bookIssue.book ? escapeHtml(fine.bookIssue.book.title) : 'Book'}</td>
-                <td>${fine.overdueDays} days</td>
-                <td class="fw-bold">$${Number(fine.amount).toFixed(2)}</td>
-                <td><span class="badge ${badgeClass}">${fine.status}</span></td>
+                <td>${escapeHtml(f.bookIssue && f.bookIssue.book ? f.bookIssue.book.title : 'Book')}</td>
+                <td><span class="badge badge-soft-danger">${f.overdueDays} days</span></td>
+                <td class="fw-bold fs-6">${formatCurrency(f.amount)}</td>
+                <td><span class="badge ${badgeClass}">${f.status}</span></td>
                 <td>
-                    <small>${fine.paidDate ? fine.paidDate : '-'}</small>
-                    ${fine.paymentMode ? `<br><span class="badge bg-secondary">${fine.paymentMode}</span>` : ''}
+                    ${f.paidDate ? `<span class="fw-semibold">${f.paidDate}</span>` : '<span class="text-muted">-</span>'}
+                    ${f.paymentMode ? `<br><small class="badge bg-light text-dark border">${f.paymentMode}</small>` : ''}
                 </td>
-                <td>
-                    ${fine.status === 'UNPAID' ? `
-                        <button class="btn btn-sm btn-success btn-action me-1" onclick="openPayFineModal(${fine.id}, ${fine.amount})" title="Collect Fine Payment">
-                            <i class="bi bi-cash-coin"></i>
+                <td><small class="text-muted">${escapeHtml(f.remarks || '-')}</small></td>
+                <td class="text-end">
+                    ${isUnpaid ? `
+                        <button class="btn btn-success btn-sm py-1 px-2 me-1" onclick="openPayFineModal(${f.id}, ${f.amount})" title="Mark as Paid">
+                            <i class="bi bi-cash-coin me-1"></i> Pay
                         </button>
-                        <button class="btn btn-sm btn-outline-secondary btn-action" onclick="waiveFine(${fine.id})" title="Waive Fine">
+                        <button class="btn btn-outline-secondary btn-sm py-1 px-2" onclick="confirmWaiveFine(${f.id})" title="Waive Fine">
                             <i class="bi bi-x-circle"></i>
                         </button>
-                    ` : `<span class="text-muted"><i class="bi bi-check-circle-fill text-success"></i> Settled</span>`}
+                    ` : `
+                        <span class="text-success small fw-semibold"><i class="bi bi-check-circle-fill me-1"></i>Settled</span>
+                    `}
                 </td>
             </tr>
         `;
     }).join('');
 }
 
-function filterFines(status) {
-    if (status === 'ALL') {
-        renderFineTable(allFinesCache);
-    } else {
-        renderFineTable(allFinesCache.filter(f => f.status === status));
-    }
-}
-
-async function loadFineSummary() {
-    try {
-        const res = await fetch(`${API_BASE}/fines/summary`);
-        const summary = await res.json();
-
-        document.getElementById('fineTotalAmount').innerText = `$${Number(summary.totalFineAmount || 0).toFixed(2)}`;
-        document.getElementById('fineCollectedAmount').innerText = `$${Number(summary.totalCollectedFine || 0).toFixed(2)}`;
-        document.getElementById('finePendingAmount').innerText = `$${Number(summary.totalPendingFine || 0).toFixed(2)}`;
-        document.getElementById('fineUnpaidCount').innerText = summary.unpaidCount || 0;
-    } catch (err) {
-        console.error('Error loading fine summary:', err);
-    }
-}
-
 function openPayFineModal(fineId, amount) {
     document.getElementById('payFineId').value = fineId;
-    document.getElementById('payFineAmount').innerText = `$${Number(amount).toFixed(2)}`;
+    document.getElementById('payFineAmount').innerText = formatCurrency(amount);
     document.getElementById('payFineMode').value = 'Cash';
-    document.getElementById('payFineRemarks').value = 'Paid at circulation desk';
+    document.getElementById('payFineRemarks').value = 'Paid at Circulation Desk';
     new bootstrap.Modal(document.getElementById('payFineModal')).show();
 }
 
@@ -730,72 +1187,118 @@ async function handlePayFineSubmit(e) {
     const paymentMode = document.getElementById('payFineMode').value;
     const remarks = document.getElementById('payFineRemarks').value.trim();
 
-    try {
-        const res = await fetch(`${API_BASE}/fines/${fineId}/pay`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentMode, remarks })
-        });
+    const submitBtn = document.getElementById('btnPayFineSubmit');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Recording...`;
 
-        const data = await res.json();
-        if (res.ok) {
-            bootstrap.Modal.getInstance(document.getElementById('payFineModal')).hide();
-            showToast(`Fine #${fineId} payment recorded successfully via ${paymentMode}!`, 'success');
-            loadFines();
-            loadFineSummary();
-        } else {
-            showToast(data.error || 'Failed to record fine payment', 'danger');
-        }
+    try {
+        await apiClient.post(`/fines/${fineId}/pay`, { paymentMode, remarks });
+        showToast(`Fine #${fineId} payment recorded successfully!`, 'success');
+        bootstrap.Modal.getInstance(document.getElementById('payFineModal'))?.hide();
+
+        await loadFines();
+        loadDashboard();
     } catch (err) {
-        showToast('Network error while paying fine', 'danger');
+        showToast(err.message, 'danger');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="bi bi-check-lg me-1"></i> Record Payment`;
     }
 }
 
-async function waiveFine(fineId) {
-    const reason = prompt('Enter reason for waiving this fine:');
-    if (reason === null) return;
-
-    try {
-        const res = await fetch(`${API_BASE}/fines/${fineId}/waive`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ remarks: reason })
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-            showToast(`Fine #${fineId} has been waived.`, 'info');
-            loadFines();
-            loadFineSummary();
-        } else {
-            showToast(data.error || 'Failed to waive fine', 'danger');
+function confirmWaiveFine(fineId) {
+    showConfirmModal(
+        'Waive Fine',
+        `Are you sure you want to waive fine #${fineId}? A waiver remark will be recorded.`,
+        async () => {
+            try {
+                await apiClient.post(`/fines/${fineId}/waive`, { remarks: 'Waived by Chief Librarian' });
+                showToast(`Fine #${fineId} has been waived.`, 'info');
+                await loadFines();
+                loadDashboard();
+            } catch (err) {
+                showToast(err.message, 'danger');
+            }
         }
-    } catch (err) {
-        showToast('Network error while waiving fine', 'danger');
-    }
+    );
 }
 
-// -------------------------------------------------------------
+// ==============================================================================
 // MODULE 6: SEARCH BOOK
-// -------------------------------------------------------------
+// ==============================================================================
 async function loadSearchCategories() {
     try {
-        const res = await fetch(`${API_BASE}/search/categories`);
-        const categories = await res.json();
-        const select = document.getElementById('searchCategory');
-        if (select) {
-            select.innerHTML = '<option value="All">All Categories</option>' +
-                categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-        }
+        const categories = await apiClient.get('/search/categories');
+        state.categories = categories;
+
+        const select = document.getElementById('searchCategorySelect');
+        if (!select) return;
+
+        select.innerHTML = '<option value="All">All Categories</option>' +
+            categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
     } catch (err) {
         console.error('Error loading search categories:', err);
     }
 }
 
+function initSearchInputs() {
+    const heroInput = document.getElementById('searchHeroInput');
+    const heroClear = document.getElementById('searchHeroClear');
+    const catSelect = document.getElementById('searchCategorySelect');
+    const stockToggle = document.getElementById('searchInStockToggle');
+
+    if (heroInput) {
+        heroInput.addEventListener('input', debounce(() => {
+            if (heroClear) heroClear.style.display = heroInput.value ? 'block' : 'none';
+            executeSearch();
+        }, 300));
+    }
+
+    if (catSelect) catSelect.addEventListener('change', executeSearch);
+    if (stockToggle) stockToggle.addEventListener('change', executeSearch);
+
+    // Module 1 User search
+    const userSearch = document.getElementById('userSearchInput');
+    const userRole = document.getElementById('userRoleFilter');
+    const userStatus = document.getElementById('userStatusFilter');
+    if (userSearch) userSearch.addEventListener('input', debounce(filterAndRenderUsers, 200));
+    if (userRole) userRole.addEventListener('change', filterAndRenderUsers);
+    if (userStatus) userStatus.addEventListener('change', filterAndRenderUsers);
+
+    // Module 2 Book search
+    const bookSearch = document.getElementById('bookSearchInput');
+    const bookCat = document.getElementById('bookCategoryFilter');
+    if (bookSearch) bookSearch.addEventListener('input', debounce(filterAndRenderBooks, 200));
+    if (bookCat) bookCat.addEventListener('change', filterAndRenderBooks);
+
+    // Module 4 Return search
+    const returnSearch = document.getElementById('returnSearchInput');
+    if (returnSearch) returnSearch.addEventListener('input', debounce(() => renderReturnDeskTable(state.activeIssues), 200));
+
+    // Module 3 Loan period change
+    const loanDays = document.getElementById('issueLoanDays');
+    if (loanDays) loanDays.addEventListener('input', updateIssueDueDatePreview);
+}
+
+function clearHeroSearch() {
+    const heroInput = document.getElementById('searchHeroInput');
+    const heroClear = document.getElementById('searchHeroClear');
+    if (heroInput) heroInput.value = '';
+    if (heroClear) heroClear.style.display = 'none';
+    executeSearch();
+}
+
+function setSearchViewMode(mode) {
+    state.searchViewMode = mode;
+    document.getElementById('btnViewGrid')?.classList.toggle('active', mode === 'grid');
+    document.getElementById('btnViewTable')?.classList.toggle('active', mode === 'table');
+    executeSearch();
+}
+
 async function executeSearch() {
-    const query = document.getElementById('searchQuery')?.value.trim() || '';
-    const category = document.getElementById('searchCategory')?.value || 'All';
-    const inStockOnly = document.getElementById('inStockOnly')?.checked || false;
+    const query = document.getElementById('searchHeroInput')?.value.trim() || '';
+    const category = document.getElementById('searchCategorySelect')?.value || 'All';
+    const inStockOnly = document.getElementById('searchInStockToggle')?.checked || false;
 
     const params = new URLSearchParams();
     if (query) params.append('q', query);
@@ -803,210 +1306,268 @@ async function executeSearch() {
     if (inStockOnly) params.append('inStockOnly', 'true');
 
     try {
-        const res = await fetch(`${API_BASE}/search?${params.toString()}`);
-        const books = await res.json();
-
-        const grid = document.getElementById('searchResultsGrid');
-        if (!grid) return;
-
-        if (books.length === 0) {
-            grid.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <i class="bi bi-search fs-1 text-muted"></i>
-                    <h5 class="mt-3 text-muted">No books found matching your search.</h5>
-                    <p class="text-secondary small">Try changing your keywords or category filter.</p>
-                </div>
-            `;
-            return;
-        }
-
-        grid.innerHTML = books.map(book => `
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="book-card">
-                    <div>
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="badge bg-light text-primary border">${escapeHtml(book.category)}</span>
-                            <span class="badge ${book.availableCopies > 0 ? 'badge-active' : 'badge-inactive'}">
-                                ${book.availableCopies > 0 ? `${book.availableCopies} in Stock` : 'Out of Stock'}
-                            </span>
-                        </div>
-                        <h6 class="book-card-title">${escapeHtml(book.title)}</h6>
-                        <div class="book-card-author"><i class="bi bi-person"></i> ${escapeHtml(book.author)}</div>
-                        <div class="small text-muted mb-2">
-                            <div><i class="bi bi-upc-scan"></i> <strong>ISBN:</strong> ${escapeHtml(book.isbn)}</div>
-                            <div><i class="bi bi-geo-alt"></i> <strong>Rack:</strong> ${escapeHtml(book.rackNumber || 'General')}</div>
-                            <div><i class="bi bi-building"></i> <strong>Publisher:</strong> ${escapeHtml(book.publisher || '-')}</div>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
-                        <span class="fw-bold text-primary">$${Number(book.price || 0).toFixed(2)}</span>
-                        ${book.availableCopies > 0 ? `
-                            <button class="btn btn-sm btn-outline-primary" onclick="quickIssueBook(${book.id})">
-                                <i class="bi bi-journal-arrow-up"></i> Issue This Book
-                            </button>
-                        ` : `
-                            <button class="btn btn-sm btn-secondary" disabled>Unavailable</button>
-                        `}
-                    </div>
-                </div>
-            </div>
-        `).join('');
+        const books = await apiClient.get(`/search?${params.toString()}`);
+        renderSearchResults(books);
     } catch (err) {
         console.error('Error executing search:', err);
     }
 }
 
-function quickIssueBook(bookId) {
-    showModule('issue');
+function renderSearchResults(books) {
+    const container = document.getElementById('searchResultsContainer');
+    if (!container) return;
+
+    if (books.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state-box">
+                <i class="bi bi-journal-x empty-state-icon"></i>
+                <h5 class="fw-bold text-secondary">No Books Found</h5>
+                <p class="text-muted small mb-0">We couldn't find any books matching your search filters. Try clearing your keyword or changing category.</p>
+            </div>
+        `;
+        return;
+    }
+
+    if (state.searchViewMode === 'table') {
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th>Book ID</th>
+                            <th>Title & ISBN</th>
+                            <th>Author</th>
+                            <th>Category</th>
+                            <th>Rack Location</th>
+                            <th>Stock</th>
+                            <th>Price</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${books.map(b => `
+                            <tr>
+                                <td><strong>#${b.id}</strong></td>
+                                <td>
+                                    <div class="fw-bold">${escapeHtml(b.title)}</div>
+                                    <small class="text-muted">ISBN: ${escapeHtml(b.isbn)}</small>
+                                </td>
+                                <td>${escapeHtml(b.author)}</td>
+                                <td><span class="badge badge-soft-primary">${escapeHtml(b.category)}</span></td>
+                                <td><small>${escapeHtml(b.rackNumber || 'General')}</small></td>
+                                <td>
+                                    <span class="badge ${b.availableCopies > 0 ? 'badge-soft-success' : 'badge-soft-danger'}">
+                                        ${b.availableCopies} of ${b.totalCopies} Available
+                                    </span>
+                                </td>
+                                <td>₹${Number(b.price || 0).toFixed(2)}</td>
+                                <td class="text-end">
+                                    ${b.availableCopies > 0 ? `
+                                        <button class="btn btn-primary btn-sm py-1 px-2" onclick="quickIssueFromSearch(${b.id})">
+                                            <i class="bi bi-journal-arrow-up me-1"></i> Issue
+                                        </button>
+                                    ` : `<span class="badge bg-secondary">Out of Stock</span>`}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <div class="row g-3">
+                ${books.map(b => {
+                    const inStock = b.availableCopies > 0;
+                    return `
+                        <div class="col-md-6 col-lg-4">
+                            <div class="book-card-item">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <span class="badge badge-soft-primary">${escapeHtml(b.category)}</span>
+                                        <span class="badge ${inStock ? 'badge-soft-success' : 'badge-soft-danger'}">
+                                            ${inStock ? `${b.availableCopies} on Shelf` : 'Out of Stock'}
+                                        </span>
+                                    </div>
+                                    <h6 class="book-card-title">${escapeHtml(b.title)}</h6>
+                                    <div class="book-card-author"><i class="bi bi-person me-1"></i>${escapeHtml(b.author)}</div>
+                                    <div class="small text-muted mb-3">
+                                        <div><i class="bi bi-upc-scan me-1"></i><strong>ISBN:</strong> ${escapeHtml(b.isbn)}</div>
+                                        <div><i class="bi bi-geo-alt me-1"></i><strong>Location:</strong> ${escapeHtml(b.rackNumber || 'Main Stacks')}</div>
+                                        <div><i class="bi bi-building me-1"></i><strong>Publisher:</strong> ${escapeHtml(b.publisher || 'N/A')}</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                    <span class="fw-bold fs-6 text-primary">₹${Number(b.price || 0).toFixed(2)}</span>
+                                    ${inStock ? `
+                                        <button class="btn btn-outline-primary btn-sm" onclick="quickIssueFromSearch(${b.id})">
+                                            <i class="bi bi-journal-arrow-up me-1"></i> Issue Book
+                                        </button>
+                                    ` : `
+                                        <button class="btn btn-secondary btn-sm" disabled>Unavailable</button>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+}
+
+function quickIssueFromSearch(bookId) {
+    switchModule('issue');
     setTimeout(() => {
-        const bookSelect = document.getElementById('issueBookId');
-        if (bookSelect) bookSelect.value = bookId;
+        const select = document.getElementById('issueBookId');
+        if (select) select.value = bookId;
     }, 200);
 }
 
-// -------------------------------------------------------------
+// ==============================================================================
 // MODULE 7: LIBRARY REPORTS
-// -------------------------------------------------------------
-async function loadReportsSummary() {
+// ==============================================================================
+async function loadAllReports() {
     try {
-        const res = await fetch(`${API_BASE}/reports/summary`);
-        const summary = await res.json();
+        const [summary, mostIssued, overdue, fines, activity] = await Promise.all([
+            apiClient.get('/reports/summary'),
+            apiClient.get('/reports/most-issued'),
+            apiClient.get('/reports/overdue'),
+            apiClient.get('/reports/fines'),
+            apiClient.get('/reports/user-activity')
+        ]);
 
-        document.getElementById('repTotalBooks').innerText = summary.totalCopies || 0;
-        document.getElementById('repAvailableBooks').innerText = summary.availableCopies || 0;
-        document.getElementById('repTotalUsers').innerText = summary.totalUsers || 0;
+        // Render 9 Exact KPI Cards
+        document.getElementById('repTotalTitles').innerText = summary.totalBookTitles || 0;
+        document.getElementById('repTotalCopies').innerText = summary.totalCopies || 0;
+        document.getElementById('repAvailableCopies').innerText = summary.availableCopies || 0;
+        document.getElementById('repIssuedCopies').innerText = summary.issuedCopies || 0;
+        document.getElementById('repRegisteredUsers').innerText = summary.totalUsers || 0;
         document.getElementById('repActiveIssues').innerText = summary.activeIssues || 0;
         document.getElementById('repOverdueIssues').innerText = summary.overdueIssues || 0;
-        document.getElementById('repFineCollected').innerText = `$${Number(summary.collectedFineAmount || 0).toFixed(2)}`;
+        document.getElementById('repPendingFines').innerText = formatCurrency(summary.pendingFineAmount || 0);
+        document.getElementById('repCollectedFines').innerText = formatCurrency(summary.collectedFineAmount || 0);
+
+        // Render Report Panes
+        renderMostIssuedReport(mostIssued);
+        renderOverdueReport(overdue);
+        renderFineAuditReport(fines);
+        renderUserActivityReport(activity);
+
+        showToast('Library reports updated from real-time database.', 'success');
     } catch (err) {
-        console.error('Error loading report summary:', err);
+        showToast(`Failed to load reports: ${err.message}`, 'danger');
     }
 }
 
-async function loadMostIssuedReport() {
-    try {
-        const res = await fetch(`${API_BASE}/reports/most-issued`);
-        const list = await res.json();
+function renderMostIssuedReport(list) {
+    const tbody = document.getElementById('repMostIssuedTableBody');
+    if (!tbody) return;
 
-        const tbody = document.getElementById('repMostIssuedBody');
-        if (!tbody) return;
-
-        if (list.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No issue data available yet.</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = list.map((item, idx) => `
-            <tr>
-                <td><strong>#${idx + 1}</strong></td>
-                <td><div class="fw-semibold">${escapeHtml(item.title)}</div></td>
-                <td>${escapeHtml(item.author)}</td>
-                <td><span class="badge bg-light text-dark border">${escapeHtml(item.category)}</span></td>
-                <td><span class="badge bg-primary fs-6">${item.timesIssued} times</span></td>
-            </tr>
-        `).join('');
-    } catch (err) {
-        console.error('Error loading most issued report:', err);
+    if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">No book issue statistics recorded yet.</td></tr>`;
+        return;
     }
+
+    tbody.innerHTML = list.map((item, idx) => `
+        <tr>
+            <td><strong>#${idx + 1}</strong></td>
+            <td><div class="fw-bold">${escapeHtml(item.title)}</div></td>
+            <td>${escapeHtml(item.author)}</td>
+            <td><span class="badge badge-soft-primary">${escapeHtml(item.category)}</span></td>
+            <td><span class="badge bg-primary fs-6 px-3 py-1">${item.timesIssued} times</span></td>
+            <td>${item.availableCopies} available</td>
+        </tr>
+    `).join('');
 }
 
-async function loadOverdueReport() {
-    try {
-        const res = await fetch(`${API_BASE}/reports/overdue`);
-        const list = await res.json();
+function renderOverdueReport(list) {
+    const tbody = document.getElementById('repOverdueTableBody');
+    if (!tbody) return;
 
-        const tbody = document.getElementById('repOverdueBody');
-        if (!tbody) return;
-
-        if (list.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-success py-3"><i class="bi bi-check-circle"></i> No overdue books currently! Great job!</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = list.map(item => `
-            <tr>
-                <td><strong>#${item.issueId}</strong></td>
-                <td>
-                    <div class="fw-semibold">${escapeHtml(item.userName)}</div>
-                    <small class="text-muted">${escapeHtml(item.userPhone || item.userEmail)}</small>
-                </td>
-                <td>${escapeHtml(item.bookTitle)}</td>
-                <td class="text-danger fw-bold">${item.dueDate}</td>
-                <td><span class="badge badge-overdue">${item.daysOverdue} days late</span></td>
-                <td class="text-danger fw-bold">$${Number(item.estimatedFine).toFixed(2)}</td>
-            </tr>
-        `).join('');
-    } catch (err) {
-        console.error('Error loading overdue report:', err);
+    if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-success py-4"><i class="bi bi-check-circle-fill fs-5 me-2"></i>Great news! Zero overdue defaulters currently.</td></tr>`;
+        return;
     }
+
+    tbody.innerHTML = list.map(item => `
+        <tr>
+            <td><strong>#${item.issueId}</strong></td>
+            <td>
+                <div class="fw-bold">${escapeHtml(item.userName)}</div>
+                <small class="text-muted">${escapeHtml(item.userPhone || item.userEmail)}</small>
+            </td>
+            <td>${escapeHtml(item.bookTitle)}</td>
+            <td class="text-danger fw-bold">${item.dueDate}</td>
+            <td><span class="badge badge-soft-danger">${item.daysOverdue} days late</span></td>
+            <td class="text-danger fw-bold fs-6">${formatCurrency(item.estimatedFine)}</td>
+            <td class="text-end">
+                <button class="btn btn-warning btn-sm text-dark" onclick="openReturnModal(${item.issueId})">
+                    <i class="bi bi-arrow-return-left me-1"></i> Return
+                </button>
+            </td>
+        </tr>
+    `).join('');
 }
 
-async function loadFineReport() {
-    try {
-        const res = await fetch(`${API_BASE}/reports/fines`);
-        const list = await res.json();
+function renderFineAuditReport(list) {
+    const tbody = document.getElementById('repFineAuditTableBody');
+    if (!tbody) return;
 
-        const tbody = document.getElementById('repFineCollectionBody');
-        if (!tbody) return;
+    if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">No fine collection records found.</td></tr>`;
+        return;
+    }
 
-        if (list.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">No fines generated yet.</td></tr>`;
-            return;
-        }
+    tbody.innerHTML = list.map(f => {
+        let badge = 'badge-soft-warning';
+        if (f.status === 'PAID') badge = 'badge-soft-success';
+        if (f.status === 'WAIVED') badge = 'badge-soft-secondary';
 
-        tbody.innerHTML = list.map(f => `
+        return `
             <tr>
                 <td><strong>#${f.id}</strong></td>
                 <td>${escapeHtml(f.user ? f.user.name : '-')}</td>
-                <td>$${Number(f.amount).toFixed(2)}</td>
-                <td><span class="badge ${f.status === 'PAID' ? 'badge-paid' : 'badge-unpaid'}">${f.status}</span></td>
+                <td class="fw-bold">${formatCurrency(f.amount)}</td>
+                <td><span class="badge ${badge}">${f.status}</span></td>
                 <td>${f.paidDate || '-'}</td>
                 <td>${f.paymentMode || '-'}</td>
             </tr>
-        `).join('');
-    } catch (err) {
-        console.error('Error loading fine report:', err);
-    }
+        `;
+    }).join('');
 }
 
-async function loadUserActivityReport() {
-    try {
-        const res = await fetch(`${API_BASE}/reports/user-activity`);
-        const list = await res.json();
+function renderUserActivityReport(list) {
+    const tbody = document.getElementById('repUserActivityTableBody');
+    if (!tbody) return;
 
-        const tbody = document.getElementById('repUserActivityBody');
-        if (!tbody) return;
-
-        if (list.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">No user activity recorded.</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = list.map(item => `
-            <tr>
-                <td><strong>#${item.userId}</strong></td>
-                <td>
-                    <div class="fw-semibold">${escapeHtml(item.userName)}</div>
-                    <small class="text-muted">${escapeHtml(item.userEmail)}</small>
-                </td>
-                <td><span class="badge bg-secondary">${escapeHtml(item.membershipType)}</span></td>
-                <td><span class="badge bg-info text-dark">${item.totalBorrowed}</span></td>
-                <td><span class="badge bg-warning text-dark">${item.currentlyHolding}</span></td>
-                <td><span class="badge bg-success">${item.totalReturned}</span></td>
-            </tr>
-        `).join('');
-    } catch (err) {
-        console.error('Error loading user activity report:', err);
+    if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">No member activity recorded.</td></tr>`;
+        return;
     }
+
+    tbody.innerHTML = list.map(u => `
+        <tr>
+            <td><strong>#${u.userId}</strong></td>
+            <td>
+                <div class="fw-bold">${escapeHtml(u.userName)}</div>
+                <small class="text-muted">${escapeHtml(u.userEmail)}</small>
+            </td>
+            <td><span class="badge badge-soft-secondary">${escapeHtml(u.membershipType || 'Student')}</span></td>
+            <td><span class="badge bg-primary px-2">${u.totalBorrowed}</span></td>
+            <td><span class="badge ${u.currentlyHolding > 0 ? 'bg-warning text-dark' : 'bg-light text-muted border'} px-2">${u.currentlyHolding}</span></td>
+            <td><span class="badge bg-success px-2">${u.totalReturned}</span></td>
+        </tr>
+    `).join('');
 }
 
-// -------------------------------------------------------------
+// ==============================================================================
 // MODULE 8: ADMIN / LIBRARIAN
-// -------------------------------------------------------------
+// ==============================================================================
 async function loadAdminSettings() {
     try {
-        const res = await fetch(`${API_BASE}/admin/settings`);
-        const s = await res.json();
+        const s = await apiClient.get('/admin/settings');
+        state.settings = s;
 
         // Populate Form
         document.getElementById('settingLibraryName').value = s.libraryName || '';
@@ -1018,19 +1579,22 @@ async function loadAdminSettings() {
         document.getElementById('settingFineRate').value = s.fineRatePerDay || 5.0;
         document.getElementById('settingNotice').value = s.systemNotice || '';
 
-        // Profile Display Card
-        document.getElementById('adminCardLibName').innerText = s.libraryName;
-        document.getElementById('adminCardName').innerText = s.librarianName;
-        document.getElementById('adminCardEmail').innerText = s.librarianEmail;
-        document.getElementById('adminCardPhone').innerText = s.librarianPhone || '+1-555-0199';
-        document.getElementById('adminCardLoanDays').innerText = `${s.loanPeriodDays} Days`;
-        document.getElementById('adminCardFineRate').innerText = `$${s.fineRatePerDay}/day`;
+        // Populate Profile Card
+        document.getElementById('adminProfileName').innerText = s.librarianName || 'Chief Librarian';
+        document.getElementById('adminProfileLibraryName').innerText = s.libraryName || 'College Library';
+        document.getElementById('adminProfileEmail').innerText = s.librarianEmail || '-';
+        document.getElementById('adminProfilePhone').innerText = s.librarianPhone || '-';
+        document.getElementById('adminProfileMaxBooks').innerText = `${s.maxBooksPerUser || 3} Books`;
+        document.getElementById('adminProfileLoanDays').innerText = `${s.loanPeriodDays || 14} Days`;
+        document.getElementById('adminProfileFineRate').innerText = `${formatCurrency(s.fineRatePerDay || 5.0)} / day`;
 
-        // Update topbar banner
-        if (s.systemNotice) {
-            document.getElementById('dashboardNoticeText').innerText = s.systemNotice;
-            document.getElementById('topbarLibraryName').innerText = s.libraryName;
-        }
+        // Update Global UI
+        document.getElementById('dashLibrarianName').innerText = s.librarianName || 'Dr. Sarah Jenkins';
+        document.getElementById('navLibrarianName').innerText = s.librarianName || 'Chief Librarian';
+        document.getElementById('systemNoticeText').innerText = s.systemNotice || 'Welcome to EduLibrary.';
+        
+        const avatarInitial = s.librarianName ? s.librarianName[0].toUpperCase() : 'L';
+        document.getElementById('navProfileAvatar').innerText = avatarInitial;
     } catch (err) {
         console.error('Error loading admin settings:', err);
     }
@@ -1038,7 +1602,7 @@ async function loadAdminSettings() {
 
 async function handleAdminSettingsSubmit(e) {
     e.preventDefault();
-    const settings = {
+    const payload = {
         libraryName: document.getElementById('settingLibraryName').value.trim(),
         librarianName: document.getElementById('settingLibrarianName').value.trim(),
         librarianEmail: document.getElementById('settingLibrarianEmail').value.trim(),
@@ -1049,67 +1613,115 @@ async function handleAdminSettingsSubmit(e) {
         systemNotice: document.getElementById('settingNotice').value.trim()
     };
 
-    try {
-        const res = await fetch(`${API_BASE}/admin/settings`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(settings)
-        });
+    const submitBtn = document.getElementById('btnAdminSave');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Saving Policies...`;
 
-        if (res.ok) {
-            showToast('System configuration & Librarian profile updated successfully!', 'success');
-            loadAdminSettings();
-        } else {
-            showToast('Failed to update system settings.', 'danger');
-        }
+    try {
+        await apiClient.put('/admin/settings', payload);
+        showToast('Library configuration & policies updated successfully!', 'success');
+        await loadAdminSettings();
     } catch (err) {
-        showToast('Network error while updating settings', 'danger');
+        showToast(err.message, 'danger');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="bi bi-save me-1"></i> Save Configuration`;
     }
 }
 
-function loadDashboardNotice() {
-    loadAdminSettings();
+// ------------------------------------------------------------------------------
+// Form Submit Event Listeners Initialization
+// ------------------------------------------------------------------------------
+function initFormHandlers() {
+    document.getElementById('userForm')?.addEventListener('submit', handleUserFormSubmit);
+    document.getElementById('bookForm')?.addEventListener('submit', handleBookFormSubmit);
+    document.getElementById('issueBookForm')?.addEventListener('submit', handleIssueBookSubmit);
+    document.getElementById('returnConfirmForm')?.addEventListener('submit', handleReturnConfirmSubmit);
+    document.getElementById('payFineForm')?.addEventListener('submit', handlePayFineSubmit);
+    document.getElementById('adminSettingsForm')?.addEventListener('submit', handleAdminSettingsSubmit);
 }
 
-// -------------------------------------------------------------
-// HELPER UTILITIES
-// -------------------------------------------------------------
-function showToast(message, type = 'info') {
+// ------------------------------------------------------------------------------
+// Modal & Dialog Utilities
+// ------------------------------------------------------------------------------
+function showConfirmModal(title, message, onConfirm) {
+    const modalElem = document.getElementById('confirmModal');
+    if (!modalElem) return;
+
+    document.getElementById('confirmModalTitle').innerText = title;
+    document.getElementById('confirmModalBody').innerText = message;
+
+    const actionBtn = document.getElementById('confirmModalActionBtn');
+    const newBtn = actionBtn.cloneNode(true);
+    actionBtn.parentNode.replaceChild(newBtn, actionBtn);
+
+    const modalInstance = new bootstrap.Modal(modalElem);
+
+    newBtn.addEventListener('click', async () => {
+        modalInstance.hide();
+        if (typeof onConfirm === 'function') {
+            await onConfirm();
+        }
+    });
+
+    modalInstance.show();
+}
+
+function showToast(message, type = 'info', title = '') {
     const container = document.getElementById('toastContainer');
     if (!container) return;
 
     const toastId = 'toast-' + Date.now();
+    const iconClass = type === 'success' ? 'bi-check-circle-fill text-success' :
+                      type === 'danger' ? 'bi-exclamation-triangle-fill text-danger' :
+                      type === 'warning' ? 'bi-exclamation-circle-fill text-warning' :
+                      'bi-info-circle-fill text-primary';
+
     const toastHtml = `
-        <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-info-circle me-2"></i> ${escapeHtml(message)}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        <div id="${toastId}" class="custom-toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <i class="bi ${iconClass} fs-5"></i>
+            <div class="flex-grow-1">
+                ${title ? `<div class="fw-bold small mb-1">${escapeHtml(title)}</div>` : ''}
+                <div class="small text-secondary">${escapeHtml(message)}</div>
             </div>
+            <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
     `;
 
     container.insertAdjacentHTML('beforeend', toastHtml);
-    const toastElement = document.getElementById(toastId);
-    const toast = new bootstrap.Toast(toastElement, { delay: 4000 });
+    const toastElem = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElem, { delay: 4500 });
     toast.show();
 
-    toastElement.addEventListener('hidden.bs.toast', () => {
-        toastElement.remove();
+    toastElem.addEventListener('hidden.bs.toast', () => {
+        toastElem.remove();
     });
 }
 
-function debounce(func, delay) {
-    let timer;
-    return function (...args) {
-        clearTimeout(timer);
-        timer = setTimeout(() => func.apply(this, args), delay);
-    };
+function showLoading(show) {
+    const bar = document.getElementById('globalLoadingBar');
+    if (!bar) return;
+
+    if (show) {
+        bar.className = 'loading';
+    } else {
+        bar.className = 'done';
+        setTimeout(() => {
+            bar.className = '';
+        }, 350);
+    }
+}
+
+// ------------------------------------------------------------------------------
+// Formatting & Helper Functions
+// ------------------------------------------------------------------------------
+function formatCurrency(amount) {
+    const val = Number(amount) || 0;
+    return `₹${val.toFixed(2)}`;
 }
 
 function escapeHtml(str) {
-    if (!str) return '';
+    if (str === null || str === undefined) return '';
     return String(str)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -1117,3 +1729,13 @@ function escapeHtml(str) {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
 }
+
+function debounce(func, delay = 250) {
+    let timer;
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+

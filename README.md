@@ -175,3 +175,8 @@ You will see the **EduLibrary Dashboard** with immediate navigation to all **8 b
 
 ---
 
+## 🎓 College Mini-Project Features
+- Simple, readable Java code with clear comments and standard naming.
+- Zero complicated external libraries — built cleanly with Spring Boot starter web, JPA, and vanilla JS.
+- Interactive Dashboard with instant feedback toasts, live status badges, and print-ready reports.
+- Comprehensive database schema with foreign keys and cascading rules.

@@ -70,5 +70,5 @@ WHERE NOT EXISTS (SELECT 1 FROM book_issues WHERE id = 4);
 
 -- 5. Fines (Fine Management)
 INSERT INTO fines (id, issue_id, user_id, amount, overdue_days, status, paid_date, payment_mode, remarks)
-SELECT 1, 4, 1, 25.0, 5, 'UNPAID', NULL, NULL, 'Returned 5 days late - Fine $5/day'
+SELECT 1, 4, 1, 25.0, 5, 'UNPAID', NULL, NULL, 'Returned 5 days late - Fine ₹5/day'
 WHERE NOT EXISTS (SELECT 1 FROM fines WHERE id = 1);

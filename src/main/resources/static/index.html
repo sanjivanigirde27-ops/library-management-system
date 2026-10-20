@@ -3,275 +3,480 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library Management System - 8 Business Modules</title>
-    <!-- Bootstrap 5 CSS -->
+    <title>EduLibrary - Modern College Library Management System</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
+    <!-- Bootstrap Icons 1.11.3 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
+    <!-- Custom Theme CSS -->
     <link href="/css/style.css" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Sidebar Navigation -->
-    <nav class="sidebar">
-        <div class="sidebar-brand">
-            <h5><i class="bi bi-book-half text-primary me-2"></i>EduLibrary</h5>
-            <small>8 Business Modules</small>
-        </div>
-        <ul class="sidebar-menu">
-            <li class="nav-item">
-                <a class="nav-link active" data-module="dashboard" id="nav-dashboard">
-                    <i class="bi bi-grid-1x2-fill"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-module="users" id="nav-users">
-                    <i class="bi bi-people-fill"></i>
-                    <span>1. User Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-module="books" id="nav-books">
-                    <i class="bi bi-journal-bookmark-fill"></i>
-                    <span>2. Book Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-module="issue" id="nav-issue">
-                    <i class="bi bi-journal-arrow-up"></i>
-                    <span>3. Book Issue</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-module="return" id="nav-return">
-                    <i class="bi bi-arrow-return-left"></i>
-                    <span>4. Book Return</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-module="fines" id="nav-fines">
-                    <i class="bi bi-cash-stack"></i>
-                    <span>5. Fine Management</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-module="search" id="nav-search">
-                    <i class="bi bi-search"></i>
-                    <span>6. Search Book</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-module="reports" id="nav-reports">
-                    <i class="bi bi-bar-chart-fill"></i>
-                    <span>7. Library Reports</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-module="admin" id="nav-admin">
-                    <i class="bi bi-person-gear"></i>
-                    <span>8. Admin / Librarian</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
+    <!-- Global Top Loading Progress Bar -->
+    <div id="globalLoadingBar"></div>
 
-    <!-- Main Wrapper -->
-    <div class="main-wrapper">
-        <!-- Top Navbar -->
-        <header class="topbar">
-            <div class="topbar-title">
-                <i class="bi bi-layers-fill text-primary"></i>
-                <span id="topbarLibraryName">Central College Library Management System</span>
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- ======================================================================
+         Sidebar Navigation (Exactly 8 Modules + Dashboard)
+         ====================================================================== -->
+    <aside class="sidebar" id="sidebar">
+        <!-- Brand Logo -->
+        <div class="sidebar-brand">
+            <div class="brand-icon-box">
+                <i class="bi bi-book-half"></i>
             </div>
-            <div class="d-flex align-items-center gap-3">
-                <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold">
-                    <i class="bi bi-check-circle-fill text-success me-1"></i> Spring Boot + MySQL
-                </span>
-                <button class="btn btn-outline-secondary btn-sm" onclick="location.reload()" title="Refresh Page">
+            <div class="brand-info">
+                <h6 class="brand-title">EduLibrary</h6>
+                <span class="brand-subtitle">College Edition</span>
+            </div>
+        </div>
+
+        <!-- Navigation Scrollable Area -->
+        <div class="sidebar-scroll">
+            <div class="menu-category-label">Overview</div>
+            <ul class="sidebar-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" data-module="dashboard" id="nav-dashboard">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="menu-category-label">Business Modules (8)</div>
+            <ul class="sidebar-menu">
+                <!-- Module 1 -->
+                <li class="nav-item">
+                    <a class="nav-link" data-module="users" id="nav-users">
+                        <i class="bi bi-people-fill"></i>
+                        <span>1. User Management</span>
+                        <span class="module-pill">M1</span>
+                    </a>
+                </li>
+                <!-- Module 2 -->
+                <li class="nav-item">
+                    <a class="nav-link" data-module="books" id="nav-books">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                        <span>2. Book Management</span>
+                        <span class="module-pill">M2</span>
+                    </a>
+                </li>
+                <!-- Module 3 -->
+                <li class="nav-item">
+                    <a class="nav-link" data-module="issue" id="nav-issue">
+                        <i class="bi bi-journal-arrow-up"></i>
+                        <span>3. Book Issue</span>
+                        <span class="module-pill">M3</span>
+                    </a>
+                </li>
+                <!-- Module 4 -->
+                <li class="nav-item">
+                    <a class="nav-link" data-module="return" id="nav-return">
+                        <i class="bi bi-arrow-return-left"></i>
+                        <span>4. Book Return</span>
+                        <span class="module-pill">M4</span>
+                    </a>
+                </li>
+                <!-- Module 5 -->
+                <li class="nav-item">
+                    <a class="nav-link" data-module="fines" id="nav-fines">
+                        <i class="bi bi-cash-stack"></i>
+                        <span>5. Fine Management</span>
+                        <span class="module-pill">M5</span>
+                    </a>
+                </li>
+                <!-- Module 6 -->
+                <li class="nav-item">
+                    <a class="nav-link" data-module="search" id="nav-search">
+                        <i class="bi bi-search"></i>
+                        <span>6. Search Book</span>
+                        <span class="module-pill">M6</span>
+                    </a>
+                </li>
+                <!-- Module 7 -->
+                <li class="nav-item">
+                    <a class="nav-link" data-module="reports" id="nav-reports">
+                        <i class="bi bi-bar-chart-fill"></i>
+                        <span>7. Library Reports</span>
+                        <span class="module-pill">M7</span>
+                    </a>
+                </li>
+                <!-- Module 8 -->
+                <li class="nav-item">
+                    <a class="nav-link" data-module="admin" id="nav-admin">
+                        <i class="bi bi-person-gear"></i>
+                        <span>8. Admin / Librarian</span>
+                        <span class="module-pill">M8</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+            <div class="backend-indicator">
+                <span class="status-dot"></span>
+                <span>Spring Boot 3 + MySQL</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ======================================================================
+         Main Application Layout Wrapper
+         ====================================================================== -->
+    <div class="main-wrapper">
+        <!-- Top Navigation Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="sidebar-toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="page-title-box">
+                    <h5 id="pageTitle">Dashboard</h5>
+                    <span class="breadcrumb-label" id="pageBreadcrumb">Overview & Key Metrics</span>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <!-- Quick Search Input -->
+                <div class="nav-search-box">
+                    <i class="bi bi-search nav-search-icon"></i>
+                    <input type="text" id="navSearchInput" class="nav-search-input" placeholder="Quick search books...">
+                </div>
+
+                <!-- Overdue Notification Bell -->
+                <button class="notification-bell-btn" id="notificationBtn" title="Overdue Defaulters Alert">
+                    <i class="bi bi-bell"></i>
+                    <span class="notification-badge" id="navNotificationCount" style="display: none;">0</span>
+                </button>
+
+                <!-- Profile Area -->
+                <div class="profile-pill" onclick="switchModule('admin')">
+                    <div class="profile-avatar" id="navProfileAvatar">L</div>
+                    <div class="profile-text">
+                        <div class="profile-name" id="navLibrarianName">Chief Librarian</div>
+                        <div class="profile-role">Administrator</div>
+                    </div>
+                </div>
+
+                <!-- Refresh Button -->
+                <button class="btn-action-icon ms-1" onclick="refreshCurrentModule()" title="Refresh Current Module Data">
                     <i class="bi bi-arrow-clockwise"></i>
                 </button>
             </div>
         </header>
 
-        <!-- Content Body -->
+        <!-- Main Body Content -->
         <main class="content-body">
 
-            <!-- System Notice Banner -->
-            <div class="notice-banner">
-                <div>
-                    <i class="bi bi-megaphone-fill text-primary me-2"></i>
-                    <span id="dashboardNoticeText">Welcome to the College Library Management System.</span>
+            <!-- System Notice Banner (from Module 8) -->
+            <div class="notice-banner" id="systemNoticeBanner">
+                <div class="notice-content">
+                    <i class="bi bi-megaphone-fill notice-icon"></i>
+                    <span id="systemNoticeText">Welcome to the College Library Management System.</span>
                 </div>
-                <small class="text-muted">Status: Online</small>
+                <span class="badge bg-primary text-white rounded-pill px-3 py-1">Active Notice</span>
             </div>
 
-            <!-- ======================================================== -->
-            <!-- DASHBOARD HOME OVERVIEW (Connecting to 8 Modules)       -->
-            <!-- ======================================================== -->
+            <!-- ================================================================
+                 DASHBOARD HOME OVERVIEW
+                 ================================================================ -->
             <section id="module-dashboard" class="module-section active">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
                     <div>
-                        <h4 class="fw-bold mb-1">Library Dashboard</h4>
-                        <p class="text-muted mb-0">Select any of the 8 business modules below to manage library operations.</p>
+                        <h4 class="fw-bold mb-1">Library Central Dashboard</h4>
+                        <p class="text-muted mb-0">Overview of books, circulation, active borrowings, and fine records.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary btn-sm" onclick="switchModule('issue')">
+                            <i class="bi bi-journal-arrow-up me-1"></i> Issue Book
+                        </button>
+                        <button class="btn btn-warning btn-sm text-dark fw-semibold" onclick="switchModule('return')">
+                            <i class="bi bi-arrow-return-left me-1"></i> Return Desk
+                        </button>
                     </div>
                 </div>
 
-                <!-- 8 Interactive Module Cards Grid -->
-                <div class="row g-4 mb-4">
-                    <!-- Module 1 -->
-                    <div class="col-md-6 col-lg-3">
-                        <div class="stat-card module-card-link" data-module="users" style="cursor: pointer;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="icon-box bg-primary-subtle text-primary">
+                <!-- 8 Module Interactive Quick-Access Stat Cards -->
+                <div class="row g-3 mb-4">
+                    <!-- Stat 1: User Management -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="stat-card clickable" onclick="switchModule('users')">
+                            <div class="stat-card-top">
+                                <div class="stat-icon bg-primary-subtle text-primary">
                                     <i class="bi bi-people-fill"></i>
                                 </div>
-                                <span class="badge bg-primary">Module 1</span>
+                                <span class="stat-badge bg-primary text-white">Module 1</span>
                             </div>
-                            <h3 id="userCountTotal">0</h3>
-                            <p class="fw-semibold text-dark">User Management</p>
-                            <small class="text-muted">Register, edit & manage members</small>
+                            <div>
+                                <h3 class="stat-number" id="dashTotalUsers">0</h3>
+                                <div class="stat-title">User Management</div>
+                                <p class="stat-desc"><span id="dashActiveUsers" class="fw-bold text-success">0</span> active members</p>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Module 2 -->
-                    <div class="col-md-6 col-lg-3">
-                        <div class="stat-card module-card-link" data-module="books" style="cursor: pointer;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="icon-box bg-success-subtle text-success">
+                    <!-- Stat 2: Book Management -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="stat-card clickable" onclick="switchModule('books')">
+                            <div class="stat-card-top">
+                                <div class="stat-icon bg-success-subtle text-success">
                                     <i class="bi bi-journal-bookmark-fill"></i>
                                 </div>
-                                <span class="badge bg-success">Module 2</span>
+                                <span class="stat-badge bg-success text-white">Module 2</span>
                             </div>
-                            <h3 id="bookCountTitles">0</h3>
-                            <p class="fw-semibold text-dark">Book Management</p>
-                            <small class="text-muted">Catalog, stock & book inventory</small>
+                            <div>
+                                <h3 class="stat-number" id="dashTotalTitles">0</h3>
+                                <div class="stat-title">Book Management</div>
+                                <p class="stat-desc"><span id="dashTotalCopies">0</span> total physical copies</p>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Module 3 -->
-                    <div class="col-md-6 col-lg-3">
-                        <div class="stat-card module-card-link" data-module="issue" style="cursor: pointer;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="icon-box bg-info-subtle text-info">
+                    <!-- Stat 3: Book Issue -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="stat-card clickable" onclick="switchModule('issue')">
+                            <div class="stat-card-top">
+                                <div class="stat-icon bg-info-subtle text-info">
                                     <i class="bi bi-journal-arrow-up"></i>
                                 </div>
-                                <span class="badge bg-info">Module 3</span>
+                                <span class="stat-badge bg-info text-white">Module 3</span>
                             </div>
-                            <h3 id="activeIssueCount">0</h3>
-                            <p class="fw-semibold text-dark">Book Issue</p>
-                            <small class="text-muted">Issue books & track due dates</small>
+                            <div>
+                                <h3 class="stat-number" id="dashActiveIssues">0</h3>
+                                <div class="stat-title">Book Issue</div>
+                                <p class="stat-desc">Books currently borrowed out</p>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Module 4 -->
-                    <div class="col-md-6 col-lg-3">
-                        <div class="stat-card module-card-link" data-module="return" style="cursor: pointer;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="icon-box bg-warning-subtle text-warning">
+                    <!-- Stat 4: Book Return -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="stat-card clickable" onclick="switchModule('return')">
+                            <div class="stat-card-top">
+                                <div class="stat-icon bg-warning-subtle text-warning">
                                     <i class="bi bi-arrow-return-left"></i>
                                 </div>
-                                <span class="badge bg-warning text-dark">Module 4</span>
+                                <span class="stat-badge bg-warning text-dark">Module 4</span>
                             </div>
-                            <h3>Return Desk</h3>
-                            <p class="fw-semibold text-dark">Book Return</p>
-                            <small class="text-muted">Check-in books & calculate fines</small>
+                            <div>
+                                <h3 class="stat-number" id="dashReturnedCount">0</h3>
+                                <div class="stat-title">Book Return</div>
+                                <p class="stat-desc">Total successful return check-ins</p>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Module 5 -->
-                    <div class="col-md-6 col-lg-3">
-                        <div class="stat-card module-card-link" data-module="fines" style="cursor: pointer;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="icon-box bg-danger-subtle text-danger">
+                    <!-- Stat 5: Fine Management -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="stat-card clickable" onclick="switchModule('fines')">
+                            <div class="stat-card-top">
+                                <div class="stat-icon bg-danger-subtle text-danger">
                                     <i class="bi bi-cash-stack"></i>
                                 </div>
-                                <span class="badge bg-danger">Module 5</span>
+                                <span class="stat-badge bg-danger text-white">Module 5</span>
                             </div>
-                            <h3 id="finePendingAmount">$0.00</h3>
-                            <p class="fw-semibold text-dark">Fine Management</p>
-                            <small class="text-muted">Collect fees & manage waivers</small>
+                            <div>
+                                <h3 class="stat-number text-danger" id="dashPendingFines">₹0.00</h3>
+                                <div class="stat-title">Fine Management</div>
+                                <p class="stat-desc"><span id="dashCollectedFines" class="text-success fw-bold">₹0.00</span> collected</p>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Module 6 -->
-                    <div class="col-md-6 col-lg-3">
-                        <div class="stat-card module-card-link" data-module="search" style="cursor: pointer;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="icon-box bg-secondary-subtle text-secondary">
+                    <!-- Stat 6: Search Book -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="stat-card clickable" onclick="switchModule('search')">
+                            <div class="stat-card-top">
+                                <div class="stat-icon bg-secondary-subtle text-secondary">
                                     <i class="bi bi-search"></i>
                                 </div>
-                                <span class="badge bg-secondary">Module 6</span>
+                                <span class="stat-badge bg-secondary text-white">Module 6</span>
                             </div>
-                            <h3>Search</h3>
-                            <p class="fw-semibold text-dark">Search Book</p>
-                            <small class="text-muted">Instant catalog & category filter</small>
+                            <div>
+                                <h3 class="stat-number" id="dashAvailableCopies">0</h3>
+                                <div class="stat-title">Search Book</div>
+                                <p class="stat-desc">Copies available on shelf now</p>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Module 7 -->
-                    <div class="col-md-6 col-lg-3">
-                        <div class="stat-card module-card-link" data-module="reports" style="cursor: pointer;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="icon-box bg-dark-subtle text-dark">
+                    <!-- Stat 7: Library Reports -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="stat-card clickable" onclick="switchModule('reports')">
+                            <div class="stat-card-top">
+                                <div class="stat-icon bg-primary-subtle text-primary">
                                     <i class="bi bi-bar-chart-fill"></i>
                                 </div>
-                                <span class="badge bg-dark">Module 7</span>
+                                <span class="stat-badge bg-primary text-white">Module 7</span>
                             </div>
-                            <h3>Analytics</h3>
-                            <p class="fw-semibold text-dark">Library Reports</p>
-                            <small class="text-muted">Overdue, circulation & top books</small>
+                            <div>
+                                <h3 class="stat-number" id="dashOverdueCount">0</h3>
+                                <div class="stat-title">Library Reports</div>
+                                <p class="stat-desc text-danger fw-semibold">Overdue defaulter notices</p>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Module 8 -->
-                    <div class="col-md-6 col-lg-3">
-                        <div class="stat-card module-card-link" data-module="admin" style="cursor: pointer;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="icon-box bg-primary-subtle text-primary">
+                    <!-- Stat 8: Admin / Librarian -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="stat-card clickable" onclick="switchModule('admin')">
+                            <div class="stat-card-top">
+                                <div class="stat-icon bg-dark-subtle text-dark">
                                     <i class="bi bi-person-gear"></i>
                                 </div>
-                                <span class="badge bg-primary">Module 8</span>
+                                <span class="stat-badge bg-dark text-white">Module 8</span>
                             </div>
-                            <h3>Settings</h3>
-                            <p class="fw-semibold text-dark">Admin / Librarian</p>
-                            <small class="text-muted">Policies, loan period & rates</small>
+                            <div>
+                                <h3 class="stat-number fs-4 mt-2" id="dashLibrarianName">-</h3>
+                                <div class="stat-title">Admin / Librarian</div>
+                                <p class="stat-desc">Policies, rules & profile</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Circulation & Stock Visual Distribution -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="progress-card">
+                            <div class="progress-card-title">
+                                <span>Book Circulation Ratio</span>
+                                <strong id="circPercentText">0%</strong>
+                            </div>
+                            <div class="progress progress-thick mb-2">
+                                <div id="circProgressBar" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <small class="text-muted"><span id="circIssuedText">0</span> issued out of <span id="circTotalText">0</span> copies</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="progress-card">
+                            <div class="progress-card-title">
+                                <span>Fine Recovery Rate</span>
+                                <strong id="finePercentText">0%</strong>
+                            </div>
+                            <div class="progress progress-thick mb-2">
+                                <div id="fineProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <small class="text-muted"><span id="fineCollectedText">₹0.00</span> paid / <span id="fineTotalText">₹0.00</span> total</small>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-lg-4">
+                        <div class="progress-card">
+                            <div class="progress-card-title">
+                                <span>Active Membership Rate</span>
+                                <strong id="userPercentText">0%</strong>
+                            </div>
+                            <div class="progress progress-thick mb-2">
+                                <div id="userProgressBar" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <small class="text-muted"><span id="userActiveText">0</span> active members in good standing</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Active Issues Table -->
+                <div class="custom-card">
+                    <div class="custom-card-header">
+                        <h5><i class="bi bi-clock-history text-primary"></i> Currently Active Borrowed Books</h5>
+                        <button class="btn btn-outline-primary btn-sm" onclick="switchModule('issue')">
+                            View All Active Issues <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                    <div class="custom-card-body p-0">
+                        <div class="table-responsive border-0">
+                            <table class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Issue ID</th>
+                                        <th>Member Name</th>
+                                        <th>Book Title</th>
+                                        <th>Issue Date</th>
+                                        <th>Due Date</th>
+                                        <th>Status</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashIssuesTableBody">
+                                    <tr><td colspan="7" class="text-center text-muted py-4">Loading active book issues...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- ======================================================== -->
-            <!-- MODULE 1: USER MANAGEMENT                                -->
-            <!-- ======================================================== -->
+            <!-- ================================================================
+                 MODULE 1: USER MANAGEMENT
+                 ================================================================ -->
             <section id="module-users" class="module-section">
                 <div class="custom-card">
                     <div class="custom-card-header">
                         <div>
                             <h5><i class="bi bi-people-fill text-primary"></i> Module 1: User Management</h5>
-                            <small class="text-muted">Add, view, edit, and manage library members</small>
+                            <small class="text-muted">Register, edit, activate/deactivate, and delete library members</small>
                         </div>
                         <button class="btn btn-primary btn-sm" onclick="openAddUserModal()">
-                            <i class="bi bi-person-plus-fill me-1"></i> Add New Member
+                            <i class="bi bi-person-plus-fill me-1"></i> Add New User
                         </button>
                     </div>
-                    <div class="custom-card-body">
-                        <div class="table-responsive">
-                            <table class="table custom-table table-hover">
+
+                    <!-- Filter & Search Toolbar -->
+                    <div class="p-3 border-bottom bg-light">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                    <input type="text" id="userSearchInput" class="form-control" placeholder="Search by user name or email address...">
+                                    <button class="btn btn-outline-secondary" onclick="clearUserSearch()" title="Clear"><i class="bi bi-x"></i></button>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="userRoleFilter" class="form-select form-select-sm">
+                                    <option value="ALL">All Roles (Student, Faculty, Guest)</option>
+                                    <option value="Student">Student</option>
+                                    <option value="Faculty">Faculty</option>
+                                    <option value="Guest">Guest</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select id="userStatusFilter" class="form-select form-select-sm">
+                                    <option value="ALL">All Statuses</option>
+                                    <option value="Active">Active Only</option>
+                                    <option value="Inactive">Inactive Only</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 text-md-end">
+                                <span class="badge bg-secondary p-2">Total: <strong id="userTableCount">0</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Table -->
+                    <div class="custom-card-body p-0">
+                        <div class="table-responsive border-0">
+                            <table class="table custom-table">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Member Details</th>
+                                        <th>User ID</th>
+                                        <th>Member Info</th>
                                         <th>Phone</th>
-                                        <th>Membership Type</th>
+                                        <th>Role / Type</th>
                                         <th>Status</th>
-                                        <th>Joined Date</th>
-                                        <th>Actions</th>
+                                        <th>Registered Date</th>
+                                        <th class="text-end">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="userTableBody">
-                                    <!-- Injected via JavaScript -->
+                                    <tr><td colspan="7" class="text-center text-muted py-4">Loading users...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -279,41 +484,62 @@
                 </div>
             </section>
 
-            <!-- ======================================================== -->
-            <!-- MODULE 2: BOOK MANAGEMENT                                -->
-            <!-- ======================================================== -->
+            <!-- ================================================================
+                 MODULE 2: BOOK MANAGEMENT
+                 ================================================================ -->
             <section id="module-books" class="module-section">
                 <div class="custom-card">
                     <div class="custom-card-header">
                         <div>
                             <h5><i class="bi bi-journal-bookmark-fill text-success"></i> Module 2: Book Management</h5>
-                            <small class="text-muted">Manage library catalog, categories, rack locations, and inventory</small>
+                            <small class="text-muted">Maintain library catalog, categories, rack locations, and inventory</small>
                         </div>
-                        <div class="d-flex gap-2">
-                            <span class="badge bg-light text-dark border p-2">Total Copies: <strong id="bookCountCopies">0</strong></span>
-                            <span class="badge bg-success-subtle text-success p-2">Available: <strong id="bookCountAvailable">0</strong></span>
-                            <button class="btn btn-success btn-sm" onclick="openAddBookModal()">
-                                <i class="bi bi-plus-circle-fill me-1"></i> Add New Book
-                            </button>
+                        <button class="btn btn-success btn-sm" onclick="openAddBookModal()">
+                            <i class="bi bi-plus-circle-fill me-1"></i> Add New Book
+                        </button>
+                    </div>
+
+                    <!-- Stock Counter Bar -->
+                    <div class="p-3 border-bottom bg-light">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                    <input type="text" id="bookSearchInput" class="form-control" placeholder="Search by title, author, category, or ISBN...">
+                                    <button class="btn btn-outline-secondary" onclick="clearBookSearch()"><i class="bi bi-x"></i></button>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select id="bookCategoryFilter" class="form-select form-select-sm">
+                                    <option value="ALL">All Categories</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 text-md-end d-flex justify-content-md-end gap-2">
+                                <span class="badge bg-light text-dark border p-2">Titles: <strong id="bookTotalTitlesBadge">0</strong></span>
+                                <span class="badge bg-success-subtle text-success p-2">In Stock: <strong id="bookInStockBadge">0</strong></span>
+                            </div>
                         </div>
                     </div>
-                    <div class="custom-card-body">
-                        <div class="table-responsive">
-                            <table class="table custom-table table-hover">
+
+                    <!-- Books Table -->
+                    <div class="custom-card-body p-0">
+                        <div class="table-responsive border-0">
+                            <table class="table custom-table">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Book Title & ISBN</th>
+                                        <th>Book ID</th>
+                                        <th>Title & ISBN</th>
                                         <th>Author</th>
                                         <th>Category</th>
                                         <th>Rack / Shelf</th>
-                                        <th>Stock Availability</th>
+                                        <th>Stock (Avail / Total)</th>
                                         <th>Price</th>
-                                        <th>Actions</th>
+                                        <th>Availability</th>
+                                        <th class="text-end">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="bookTableBody">
-                                    <!-- Injected via JavaScript -->
+                                    <tr><td colspan="9" class="text-center text-muted py-4">Loading books...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -321,40 +547,52 @@
                 </div>
             </section>
 
-            <!-- ======================================================== -->
-            <!-- MODULE 3: BOOK ISSUE                                     -->
-            <!-- ======================================================== -->
+            <!-- ================================================================
+                 MODULE 3: BOOK ISSUE
+                 ================================================================ -->
             <section id="module-issue" class="module-section">
-                <div class="row">
-                    <!-- Issue Form Column -->
-                    <div class="col-lg-4 mb-4">
+                <div class="row g-4">
+                    <!-- Issue Desk Form Column -->
+                    <div class="col-lg-5">
                         <div class="custom-card h-100">
                             <div class="custom-card-header">
-                                <h5><i class="bi bi-journal-arrow-up text-info"></i> Issue a Book</h5>
+                                <h5><i class="bi bi-journal-arrow-up text-info"></i> Issue a Book to Member</h5>
                             </div>
                             <div class="custom-card-body">
                                 <form id="issueBookForm">
                                     <div class="mb-3">
-                                        <label class="form-label fw-semibold">Select Member <span class="text-danger">*</span></label>
+                                        <label class="form-label" for="issueUserId">1. Select Registered Member <span class="text-danger">*</span></label>
                                         <select id="issueUserId" class="form-select" required>
-                                            <option value="">Loading active members...</option>
+                                            <option value="">-- Choose Active Member --</option>
                                         </select>
+                                        <div class="form-text">Only members with Active status can borrow books.</div>
                                     </div>
+
                                     <div class="mb-3">
-                                        <label class="form-label fw-semibold">Select Book <span class="text-danger">*</span></label>
+                                        <label class="form-label" for="issueBookId">2. Select Book to Issue <span class="text-danger">*</span></label>
                                         <select id="issueBookId" class="form-select" required>
-                                            <option value="">Loading available books...</option>
+                                            <option value="">-- Choose Available Book --</option>
                                         </select>
+                                        <div class="form-text">Shows only books currently with available copies > 0.</div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Loan Period (Days)</label>
-                                        <input type="number" id="issueLoanDays" class="form-control" value="14" min="1" max="90" required>
+
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label" for="issueLoanDays">Loan Period (Days)</label>
+                                            <input type="number" id="issueLoanDays" class="form-control" value="14" min="1" max="90" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Calculated Due Date</label>
+                                            <div id="issueDueDatePreview" class="form-control bg-light text-primary fw-bold">-</div>
+                                        </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Remarks / Purpose</label>
-                                        <textarea id="issueRemarks" class="form-control" rows="2" placeholder="e.g. Project reference, Course study"></textarea>
+
+                                    <div class="mb-4">
+                                        <label class="form-label" for="issueRemarks">Remarks / Purpose</label>
+                                        <textarea id="issueRemarks" class="form-control" rows="2" placeholder="e.g. Semester reference, Assignment prep"></textarea>
                                     </div>
-                                    <button type="submit" class="btn btn-primary w-100">
+
+                                    <button type="submit" id="btnIssueSubmit" class="btn btn-primary w-100 py-2 fw-semibold">
                                         <i class="bi bi-check2-circle me-1"></i> Confirm & Issue Book
                                     </button>
                                 </form>
@@ -362,31 +600,32 @@
                         </div>
                     </div>
 
-                    <!-- Active Issued Books Table -->
-                    <div class="col-lg-8 mb-4">
+                    <!-- Active Issued Books List -->
+                    <div class="col-lg-7">
                         <div class="custom-card h-100">
                             <div class="custom-card-header">
-                                <h5><i class="bi bi-clock-history text-primary"></i> Currently Issued Books</h5>
-                                <button class="btn btn-outline-secondary btn-sm" onclick="loadActiveIssues()">
-                                    <i class="bi bi-arrow-clockwise"></i> Refresh
-                                </button>
+                                <div>
+                                    <h5><i class="bi bi-clock-history text-primary"></i> Active Book Issues</h5>
+                                    <small class="text-muted">Books currently borrowed out</small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill px-3 py-2" id="activeIssuesCountBadge">0 Active</span>
                             </div>
-                            <div class="custom-card-body">
-                                <div class="table-responsive">
+                            <div class="custom-card-body p-0">
+                                <div class="table-responsive border-0">
                                     <table class="table custom-table">
                                         <thead>
                                             <tr>
                                                 <th>Issue ID</th>
-                                                <th>Member</th>
-                                                <th>Book</th>
-                                                <th>Issued Date</th>
+                                                <th>User</th>
+                                                <th>Book Title</th>
+                                                <th>Issue Date</th>
                                                 <th>Due Date</th>
                                                 <th>Status</th>
-                                                <th>Action</th>
+                                                <th class="text-end">Quick Return</th>
                                             </tr>
                                         </thead>
                                         <tbody id="activeIssuesTableBody">
-                                            <!-- Injected via JavaScript -->
+                                            <tr><td colspan="7" class="text-center text-muted py-4">Loading active issues...</td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -396,147 +635,77 @@
                 </div>
             </section>
 
-            <!-- ======================================================== -->
-            <!-- MODULE 4: BOOK RETURN                                    -->
-            <!-- ======================================================== -->
+            <!-- ================================================================
+                 MODULE 4: BOOK RETURN
+                 ================================================================ -->
             <section id="module-return" class="module-section">
-                <div class="row">
-                    <!-- Return Processing Card -->
-                    <div class="col-lg-5 mb-4">
-                        <div class="custom-card">
-                            <div class="custom-card-header">
-                                <h5><i class="bi bi-arrow-return-left text-warning"></i> Module 4: Book Return Desk</h5>
-                            </div>
-                            <div class="custom-card-body">
-                                <form id="returnBookForm">
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Select Issued Book to Return <span class="text-danger">*</span></label>
-                                        <select id="returnIssueSelect" class="form-select" onchange="onReturnIssueSelected()" required>
-                                            <option value="">-- Select Active Issue Transaction --</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Overdue & Fine Calculation Preview Box -->
-                                    <div id="returnCalcPreview" class="p-3 mb-3 bg-light rounded border d-none">
-                                        <h6 class="fw-bold mb-2 text-primary border-bottom pb-1">Return & Fine Calculation</h6>
-                                        <div class="small mb-1"><strong>Book:</strong> <span id="previewBookTitle">-</span></div>
-                                        <div class="small mb-1"><strong>Member:</strong> <span id="previewUserName">-</span></div>
-                                        <div class="small mb-1"><strong>Issue Date:</strong> <span id="previewIssueDate">-</span></div>
-                                        <div class="small mb-1"><strong>Due Date:</strong> <span id="previewDueDate">-</span></div>
-                                        <div class="small mb-1"><strong>Overdue Days:</strong> <span id="previewOverdueDays" class="badge bg-secondary">0 days</span></div>
-                                        <div class="mt-2 pt-2 border-top">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span>Calculated Fine:</span>
-                                                <span id="previewFineAmount" class="text-success fw-bold fs-5">$0.00</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Return Condition / Notes</label>
-                                        <textarea id="returnRemarks" class="form-control" rows="2" placeholder="e.g. Good condition, returned on time"></textarea>
-                                    </div>
-
-                                    <button type="submit" class="btn btn-warning text-dark w-100 fw-semibold">
-                                        <i class="bi bi-box-arrow-in-down-left me-1"></i> Confirm Book Return
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Return History Table -->
-                    <div class="col-lg-7 mb-4">
-                        <div class="custom-card">
-                            <div class="custom-card-header">
-                                <h5><i class="bi bi-journal-check text-success"></i> Recent Return History</h5>
-                            </div>
-                            <div class="custom-card-body">
-                                <div class="table-responsive">
-                                    <table class="table custom-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Issue ID</th>
-                                                <th>Member</th>
-                                                <th>Book</th>
-                                                <th>Issue Date</th>
-                                                <th>Due Date</th>
-                                                <th>Returned On</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="returnHistoryTableBody">
-                                            <!-- Injected via JavaScript -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ======================================================== -->
-            <!-- MODULE 5: FINE MANAGEMENT                                -->
-            <!-- ======================================================== -->
-            <section id="module-fines" class="module-section">
-                <!-- Fine Summary Metrics -->
-                <div class="row g-3 mb-4">
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <p class="text-muted small">Total Overdue Fines</p>
-                            <h3 id="fineTotalAmount" class="text-dark">$0.00</h3>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <p class="text-muted small">Total Collected Fines</p>
-                            <h3 id="fineCollectedAmount" class="text-success">$0.00</h3>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <p class="text-muted small">Pending Unpaid Fines</p>
-                            <h3 id="finePendingAmount" class="text-danger">$0.00</h3>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <p class="text-muted small">Unpaid Records</p>
-                            <h3 id="fineUnpaidCount" class="text-warning">0</h3>
-                        </div>
+                <!-- Return Desk Info Alert -->
+                <div class="alert alert-primary d-flex align-items-center mb-4 border-0 shadow-sm" role="alert">
+                    <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+                    <div>
+                        <strong>Book Return Processing:</strong> Select any borrowed book below and click <strong>Return Book</strong>.
+                        The system will automatically calculate elapsed days, check for overdue penalties, generate fine records if late, and restore book stock back to the catalog.
                     </div>
                 </div>
 
                 <div class="custom-card">
                     <div class="custom-card-header">
                         <div>
-                            <h5><i class="bi bi-cash-stack text-danger"></i> Module 5: Fine Management</h5>
-                            <small class="text-muted">Track overdue fines, record payments, and manage waivers</small>
+                            <h5><i class="bi bi-arrow-return-left text-warning"></i> Module 4: Active Borrowings Awaiting Return</h5>
+                            <small class="text-muted">Select an issue transaction to process return check-in</small>
                         </div>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-secondary active" onclick="filterFines('ALL')">All Fines</button>
-                            <button class="btn btn-outline-danger" onclick="filterFines('UNPAID')">Unpaid Only</button>
-                            <button class="btn btn-outline-success" onclick="filterFines('PAID')">Paid Only</button>
+                        <div class="input-group input-group-sm" style="max-width: 320px;">
+                            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                            <input type="text" id="returnSearchInput" class="form-control" placeholder="Filter by user or book...">
                         </div>
                     </div>
-                    <div class="custom-card-body">
-                        <div class="table-responsive">
+                    <div class="custom-card-body p-0">
+                        <div class="table-responsive border-0">
                             <table class="table custom-table">
                                 <thead>
                                     <tr>
-                                        <th>Fine ID</th>
-                                        <th>Member Info</th>
-                                        <th>Book Title</th>
+                                        <th>Issue ID</th>
+                                        <th>Borrower Info</th>
+                                        <th>Book Title & ISBN</th>
+                                        <th>Issue Date</th>
+                                        <th>Due Date</th>
                                         <th>Overdue Days</th>
-                                        <th>Fine Amount</th>
-                                        <th>Status</th>
-                                        <th>Paid Date & Mode</th>
-                                        <th>Actions</th>
+                                        <th>Current Status</th>
+                                        <th class="text-end">Return Action</th>
                                     </tr>
                                 </thead>
-                                <tbody id="fineTableBody">
-                                    <!-- Injected via JavaScript -->
+                                <tbody id="returnDeskTableBody">
+                                    <tr><td colspan="8" class="text-center text-muted py-4">Loading active borrowings...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Return History Table -->
+                <div class="custom-card">
+                    <div class="custom-card-header">
+                        <h5><i class="bi bi-journal-check text-success"></i> Recent Return History Records</h5>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="loadReturnHistory()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh History
+                        </button>
+                    </div>
+                    <div class="custom-card-body p-0">
+                        <div class="table-responsive border-0">
+                            <table class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Issue ID</th>
+                                        <th>User Name</th>
+                                        <th>Book Title</th>
+                                        <th>Issue Date</th>
+                                        <th>Due Date</th>
+                                        <th>Actual Return Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="returnHistoryTableBody">
+                                    <tr><td colspan="7" class="text-center text-muted py-4">Loading return history...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -544,92 +713,211 @@
                 </div>
             </section>
 
-            <!-- ======================================================== -->
-            <!-- MODULE 6: SEARCH BOOK                                    -->
-            <!-- ======================================================== -->
-            <section id="module-search" class="module-section">
-                <div class="custom-card">
-                    <div class="custom-card-header">
-                        <div>
-                            <h5><i class="bi bi-search text-primary"></i> Module 6: Search Book Catalog</h5>
-                            <small class="text-muted">Find books by Title, Author, ISBN, or Category in real-time</small>
+            <!-- ================================================================
+                 MODULE 5: FINE MANAGEMENT
+                 ================================================================ -->
+            <section id="module-fines" class="module-section">
+                <!-- Summary Metrics -->
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="stat-card">
+                            <p class="stat-desc">Total Fines Accrued</p>
+                            <h3 class="stat-number my-1" id="fineMetricTotal">₹0.00</h3>
+                            <small class="text-muted">Total generated</small>
                         </div>
                     </div>
-                    <div class="custom-card-body">
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
-                                    <input type="text" id="searchQuery" class="form-control" placeholder="Search by title, author, or ISBN...">
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <select id="searchCategory" class="form-select">
-                                    <option value="All">All Categories</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3 d-flex align-items-center">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="inStockOnly">
-                                    <label class="form-check-label fw-semibold" for="inStockOnly">Available in Stock Only</label>
-                                </div>
-                            </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="stat-card">
+                            <p class="stat-desc">Total Fines Collected</p>
+                            <h3 class="stat-number my-1 text-success" id="fineMetricCollected">₹0.00</h3>
+                            <small class="text-muted">Paid revenue</small>
                         </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="stat-card">
+                            <p class="stat-desc">Pending Unpaid Fines</p>
+                            <h3 class="stat-number my-1 text-danger" id="fineMetricPending">₹0.00</h3>
+                            <small class="text-muted">Uncollected balance</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="stat-card">
+                            <p class="stat-desc">Unpaid Records</p>
+                            <h3 class="stat-number my-1 text-warning" id="fineMetricUnpaidCount">0</h3>
+                            <small class="text-muted">Pending accounts</small>
+                        </div>
+                    </div>
+                </div>
 
-                        <!-- Results Grid -->
-                        <div id="searchResultsGrid" class="row">
-                            <!-- Injected via JavaScript -->
+                <!-- Fine Management Table Card -->
+                <div class="custom-card">
+                    <div class="custom-card-header flex-wrap gap-2">
+                        <div>
+                            <h5><i class="bi bi-cash-stack text-danger"></i> Module 5: Fine Management & Collection</h5>
+                            <small class="text-muted">Track overdue penalties, collect payments, and manage waivers</small>
+                        </div>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-secondary active" id="btnFilterFineAll" onclick="setFineFilter('ALL')">All Fines</button>
+                            <button type="button" class="btn btn-outline-danger" id="btnFilterFineUnpaid" onclick="setFineFilter('UNPAID')">Pending Unpaid</button>
+                            <button type="button" class="btn btn-outline-success" id="btnFilterFinePaid" onclick="setFineFilter('PAID')">Paid / Settled</button>
+                            <button type="button" class="btn btn-outline-secondary" id="btnFilterFineWaived" onclick="setFineFilter('WAIVED')">Waived</button>
+                        </div>
+                    </div>
+                    <div class="custom-card-body p-0">
+                        <div class="table-responsive border-0">
+                            <table class="table custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fine ID</th>
+                                        <th>Member Name</th>
+                                        <th>Book Title</th>
+                                        <th>Overdue Days</th>
+                                        <th>Fine Amount</th>
+                                        <th>Status</th>
+                                        <th>Paid Date & Mode</th>
+                                        <th>Remarks</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fineTableBody">
+                                    <tr><td colspan="9" class="text-center text-muted py-4">Loading fines...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- ======================================================== -->
-            <!-- MODULE 7: LIBRARY REPORTS                                -->
-            <!-- ======================================================== -->
+            <!-- ================================================================
+                 MODULE 6: SEARCH BOOK
+                 ================================================================ -->
+            <section id="module-search" class="module-section">
+                <!-- Hero Search Bar -->
+                <div class="hero-search-container">
+                    <div class="text-center mb-3">
+                        <h4 class="fw-bold mb-1"><i class="bi bi-search me-2"></i>Search Book Catalog</h4>
+                        <p class="text-light small mb-0">Search thousands of library titles instantly by Title, Author, Category, or ISBN</p>
+                    </div>
+
+                    <div class="hero-search-box">
+                        <i class="bi bi-search hero-search-icon"></i>
+                        <input type="text" id="searchHeroInput" class="hero-search-input" placeholder="Type title, author, keyword, or ISBN...">
+                        <button type="button" id="searchHeroClear" class="hero-search-clear" onclick="clearHeroSearch()"><i class="bi bi-x-circle-fill"></i></button>
+                    </div>
+
+                    <div class="row g-3 justify-content-center mt-2">
+                        <div class="col-auto">
+                            <select id="searchCategorySelect" class="form-select form-select-sm" style="min-width: 180px;">
+                                <option value="All">All Categories</option>
+                            </select>
+                        </div>
+                        <div class="col-auto d-flex align-items-center">
+                            <div class="form-check form-switch text-white">
+                                <input class="form-check-input" type="checkbox" id="searchInStockToggle">
+                                <label class="form-check-label small ms-1" for="searchInStockToggle">In Stock Only</label>
+                            </div>
+                        </div>
+                        <div class="col-auto d-flex align-items-center gap-1">
+                            <button class="btn btn-sm btn-outline-light active" id="btnViewGrid" onclick="setSearchViewMode('grid')" title="Card Grid View">
+                                <i class="bi bi-grid-fill"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-light" id="btnViewTable" onclick="setSearchViewMode('table')" title="Table View">
+                                <i class="bi bi-list-ul"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Results Grid / Table View -->
+                <div id="searchResultsContainer">
+                    <div class="row g-3" id="searchResultsGrid">
+                        <!-- Injected via JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================================================================
+                 MODULE 7: LIBRARY REPORTS
+                 ================================================================ -->
             <section id="module-reports" class="module-section">
-                <!-- Summary Metrics for Reports -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+                    <div>
+                        <h4 class="fw-bold mb-1">Module 7: Library Reports & Statistical Summary</h4>
+                        <p class="text-muted mb-0">Real-time circulation metrics, overdue defaulters, and fine collection audit.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="loadAllReports()" title="Refresh live backend statistics">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Refresh Reports
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()" title="Print this report">
+                            <i class="bi bi-printer me-1"></i> Print / Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Exactly the 9 Requested Summary Metric Cards -->
                 <div class="row g-3 mb-4">
-                    <div class="col-md-2">
+                    <div class="col-sm-6 col-md-4 col-xl">
                         <div class="stat-card text-center p-3">
-                            <small class="text-muted">Total Stock</small>
-                            <h4 id="repTotalBooks" class="fw-bold my-1">0</h4>
-                            <small class="text-muted">copies</small>
+                            <small class="text-muted font-monospace">1. Titles</small>
+                            <h3 class="stat-number text-primary my-1" id="repTotalTitles">0</h3>
+                            <small class="text-muted">Total Titles</small>
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-sm-6 col-md-4 col-xl">
                         <div class="stat-card text-center p-3">
-                            <small class="text-muted">Available</small>
-                            <h4 id="repAvailableBooks" class="fw-bold my-1 text-success">0</h4>
-                            <small class="text-muted">copies on shelf</small>
+                            <small class="text-muted font-monospace">2. Copies</small>
+                            <h3 class="stat-number my-1" id="repTotalCopies">0</h3>
+                            <small class="text-muted">Total Copies</small>
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-sm-6 col-md-4 col-xl">
                         <div class="stat-card text-center p-3">
+                            <small class="text-muted font-monospace">3. Available</small>
+                            <h3 class="stat-number text-success my-1" id="repAvailableCopies">0</h3>
+                            <small class="text-muted">On Shelf</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-xl">
+                        <div class="stat-card text-center p-3">
+                            <small class="text-muted font-monospace">4. Issued</small>
+                            <h3 class="stat-number text-info my-1" id="repIssuedCopies">0</h3>
+                            <small class="text-muted">Issued Copies</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-xl">
+                        <div class="stat-card text-center p-3">
+                            <small class="text-muted font-monospace">5. Users</small>
+                            <h3 class="stat-number text-dark my-1" id="repRegisteredUsers">0</h3>
                             <small class="text-muted">Registered Users</small>
-                            <h4 id="repTotalUsers" class="fw-bold my-1 text-primary">0</h4>
-                            <small class="text-muted">members</small>
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-sm-6 col-md-4 col-xl">
                         <div class="stat-card text-center p-3">
+                            <small class="text-muted font-monospace">6. Active</small>
+                            <h3 class="stat-number text-primary my-1" id="repActiveIssues">0</h3>
                             <small class="text-muted">Active Issues</small>
-                            <h4 id="repActiveIssues" class="fw-bold my-1 text-info">0</h4>
-                            <small class="text-muted">in circulation</small>
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-sm-6 col-md-4 col-xl">
                         <div class="stat-card text-center p-3">
-                            <small class="text-muted">Overdue</small>
-                            <h4 id="repOverdueIssues" class="fw-bold my-1 text-danger">0</h4>
-                            <small class="text-muted">late returns</small>
+                            <small class="text-muted font-monospace">7. Overdue</small>
+                            <h3 class="stat-number text-danger my-1" id="repOverdueIssues">0</h3>
+                            <small class="text-muted">Overdue Issues</small>
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-sm-6 col-md-4 col-xl">
                         <div class="stat-card text-center p-3">
-                            <small class="text-muted">Fine Collected</small>
-                            <h4 id="repFineCollected" class="fw-bold my-1 text-success">$0.00</h4>
-                            <small class="text-muted">revenue</small>
+                            <small class="text-muted font-monospace">8. Pending</small>
+                            <h3 class="stat-number text-warning my-1" id="repPendingFines">₹0.00</h3>
+                            <small class="text-muted">Pending Fines</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-xl">
+                        <div class="stat-card text-center p-3">
+                            <small class="text-muted font-monospace">9. Collected</small>
+                            <h3 class="stat-number text-success my-1" id="repCollectedFines">₹0.00</h3>
+                            <small class="text-muted">Fine Collection</small>
                         </div>
                     </div>
                 </div>
@@ -637,10 +925,7 @@
                 <!-- Tabbed Detailed Reports -->
                 <div class="custom-card">
                     <div class="custom-card-header">
-                        <h5><i class="bi bi-bar-chart-fill text-primary"></i> Module 7: Library Operational Reports</h5>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
-                            <i class="bi bi-printer me-1"></i> Print / Export Report
-                        </button>
+                        <h5><i class="bi bi-file-earmark-bar-graph text-primary"></i> Detailed Operational Audit Reports</h5>
                     </div>
                     <div class="custom-card-body">
                         <ul class="nav nav-tabs mb-4" id="reportTabs" role="tablist">
@@ -651,7 +936,7 @@
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="tab-overdue" data-bs-toggle="tab" data-bs-target="#pane-overdue" type="button">
-                                    <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Overdue Defaulters
+                                    <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Overdue Defaulters List
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
@@ -666,8 +951,8 @@
                             </li>
                         </ul>
 
-                        <div class="tab-content" id="reportTabsContent">
-                            <!-- Tab 1: Most Issued -->
+                        <div class="tab-content">
+                            <!-- Pane 1: Most Issued Books -->
                             <div class="tab-pane fade show active" id="pane-most-issued">
                                 <div class="table-responsive">
                                     <table class="table custom-table">
@@ -677,53 +962,61 @@
                                                 <th>Book Title</th>
                                                 <th>Author</th>
                                                 <th>Category</th>
-                                                <th>Times Borrowed</th>
+                                                <th>Times Issued</th>
+                                                <th>Available Copies</th>
                                             </tr>
                                         </thead>
-                                        <tbody id="repMostIssuedBody"></tbody>
+                                        <tbody id="repMostIssuedTableBody">
+                                            <tr><td colspan="6" class="text-center text-muted py-3">Loading most issued books...</td></tr>
+                                        </tbody>
                                     </table>
                                 </div>
                             </div>
 
-                            <!-- Tab 2: Overdue Defaulters -->
+                            <!-- Pane 2: Overdue Defaulters -->
                             <div class="tab-pane fade" id="pane-overdue">
                                 <div class="table-responsive">
                                     <table class="table custom-table">
                                         <thead>
                                             <tr>
                                                 <th>Issue ID</th>
-                                                <th>Member Name & Contact</th>
+                                                <th>Borrower Contact</th>
                                                 <th>Book Title</th>
                                                 <th>Due Date</th>
                                                 <th>Days Late</th>
                                                 <th>Accrued Fine</th>
+                                                <th class="text-end">Action</th>
                                             </tr>
                                         </thead>
-                                        <tbody id="repOverdueBody"></tbody>
+                                        <tbody id="repOverdueTableBody">
+                                            <tr><td colspan="7" class="text-center text-muted py-3">Loading overdue defaulters...</td></tr>
+                                        </tbody>
                                     </table>
                                 </div>
                             </div>
 
-                            <!-- Tab 3: Fine Collection Audit -->
+                            <!-- Pane 3: Fine Collection Audit -->
                             <div class="tab-pane fade" id="pane-fines">
                                 <div class="table-responsive">
                                     <table class="table custom-table">
                                         <thead>
                                             <tr>
                                                 <th>Fine ID</th>
-                                                <th>Member</th>
+                                                <th>Member Name</th>
                                                 <th>Amount</th>
                                                 <th>Status</th>
                                                 <th>Payment Date</th>
                                                 <th>Payment Mode</th>
                                             </tr>
                                         </thead>
-                                        <tbody id="repFineCollectionBody"></tbody>
+                                        <tbody id="repFineAuditTableBody">
+                                            <tr><td colspan="6" class="text-center text-muted py-3">Loading fine collection audit...</td></tr>
+                                        </tbody>
                                     </table>
                                 </div>
                             </div>
 
-                            <!-- Tab 4: Member Activity -->
+                            <!-- Pane 4: Member Borrowing Activity -->
                             <div class="tab-pane fade" id="pane-user-activity">
                                 <div class="table-responsive">
                                     <table class="table custom-table">
@@ -731,13 +1024,15 @@
                                             <tr>
                                                 <th>User ID</th>
                                                 <th>Member Name & Email</th>
-                                                <th>Membership Type</th>
+                                                <th>Role</th>
                                                 <th>Total Borrowed</th>
                                                 <th>Currently Holding</th>
                                                 <th>Returned</th>
                                             </tr>
                                         </thead>
-                                        <tbody id="repUserActivityBody"></tbody>
+                                        <tbody id="repUserActivityTableBody">
+                                            <tr><td colspan="6" class="text-center text-muted py-3">Loading member activity...</td></tr>
+                                        </tbody>
                                     </table>
                                 </div>
                             </div>
@@ -746,100 +1041,104 @@
                 </div>
             </section>
 
-            <!-- ======================================================== -->
-            <!-- MODULE 8: ADMIN / LIBRARIAN                              -->
-            <!-- ======================================================== -->
+            <!-- ================================================================
+                 MODULE 8: ADMIN / LIBRARIAN
+                 ================================================================ -->
             <section id="module-admin" class="module-section">
-                <div class="row">
+                <div class="row g-4">
                     <!-- Librarian Profile Card -->
-                    <div class="col-lg-4 mb-4">
+                    <div class="col-lg-4">
                         <div class="custom-card h-100">
                             <div class="custom-card-header">
                                 <h5><i class="bi bi-person-badge text-primary"></i> Librarian Profile</h5>
                             </div>
                             <div class="custom-card-body text-center">
-                                <div class="avatar-placeholder mb-3">
-                                    <i class="bi bi-person-circle fs-1 text-primary"></i>
+                                <div class="avatar-initial mx-auto mb-3" style="width: 72px; height: 72px; font-size: 1.8rem;">
+                                    <i class="bi bi-person-fill"></i>
                                 </div>
-                                <h5 id="adminCardName" class="fw-bold mb-1">Chief Librarian</h5>
-                                <p id="adminCardLibName" class="text-primary small mb-2">Central College Library</p>
-                                <span class="badge bg-success-subtle text-success mb-3">Administrator Access</span>
+                                <h5 class="fw-bold mb-1" id="adminProfileName">Chief Librarian</h5>
+                                <p class="text-primary small mb-2" id="adminProfileLibraryName">Central College Library</p>
+                                <span class="badge bg-success-subtle text-success mb-3">System Administrator</span>
 
-                                <ul class="list-group list-group-flush text-start small mt-2">
+                                <ul class="list-group list-group-flush text-start small mt-3">
                                     <li class="list-group-item d-flex justify-content-between px-0">
                                         <span class="text-muted"><i class="bi bi-envelope me-1"></i> Email:</span>
-                                        <span id="adminCardEmail" class="fw-semibold">librarian@college.edu</span>
+                                        <span class="fw-semibold" id="adminProfileEmail">librarian@college.edu</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between px-0">
                                         <span class="text-muted"><i class="bi bi-telephone me-1"></i> Phone:</span>
-                                        <span id="adminCardPhone" class="fw-semibold">+1-555-0199</span>
+                                        <span class="fw-semibold" id="adminProfilePhone">+1-555-0199</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between px-0">
-                                        <span class="text-muted"><i class="bi bi-calendar3 me-1"></i> Default Loan:</span>
-                                        <span id="adminCardLoanDays" class="fw-semibold">14 Days</span>
+                                        <span class="text-muted"><i class="bi bi-book me-1"></i> Max Books / User:</span>
+                                        <span class="fw-semibold" id="adminProfileMaxBooks">3 Books</span>
                                     </li>
                                     <li class="list-group-item d-flex justify-content-between px-0">
-                                        <span class="text-muted"><i class="bi bi-coin me-1"></i> Overdue Fine:</span>
-                                        <span id="adminCardFineRate" class="fw-semibold">$5.00/day</span>
+                                        <span class="text-muted"><i class="bi bi-calendar-event me-1"></i> Default Loan Period:</span>
+                                        <span class="fw-semibold" id="adminProfileLoanDays">14 Days</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between px-0">
+                                        <span class="text-muted"><i class="bi bi-coin me-1"></i> Overdue Fine Rate:</span>
+                                        <span class="fw-semibold text-danger" id="adminProfileFineRate">₹5.00 / day</span>
                                     </li>
                                 </ul>
                             </div>
                         </div>
                     </div>
 
-                    <!-- System Policy & Rules Configuration Form -->
-                    <div class="col-lg-8 mb-4">
+                    <!-- System Policies & Rules Form -->
+                    <div class="col-lg-8">
                         <div class="custom-card h-100">
                             <div class="custom-card-header">
-                                <h5><i class="bi bi-sliders text-primary"></i> Module 8: System Configuration & Rules</h5>
-                                <small class="text-muted">Configure operational parameters</small>
+                                <h5><i class="bi bi-sliders text-primary"></i> Module 8: Library Configuration & Policies</h5>
+                                <small class="text-muted">Configure operational parameters and announcement</small>
                             </div>
                             <div class="custom-card-body">
                                 <form id="adminSettingsForm">
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-6">
-                                            <label class="form-label fw-semibold">Library / College Name</label>
+                                            <label class="form-label" for="settingLibraryName">Library / College Name <span class="text-danger">*</span></label>
                                             <input type="text" id="settingLibraryName" class="form-control" required>
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label fw-semibold">Chief Librarian Name</label>
+                                            <label class="form-label" for="settingLibrarianName">Chief Librarian Name <span class="text-danger">*</span></label>
                                             <input type="text" id="settingLibrarianName" class="form-control" required>
                                         </div>
                                     </div>
 
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-6">
-                                            <label class="form-label fw-semibold">Librarian Email</label>
+                                            <label class="form-label" for="settingLibrarianEmail">Librarian Email <span class="text-danger">*</span></label>
                                             <input type="email" id="settingLibrarianEmail" class="form-control" required>
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label fw-semibold">Librarian Phone</label>
+                                            <label class="form-label" for="settingLibrarianPhone">Librarian Phone</label>
                                             <input type="text" id="settingLibrarianPhone" class="form-control">
                                         </div>
                                     </div>
 
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-4">
-                                            <label class="form-label fw-semibold">Max Books Per User</label>
+                                            <label class="form-label" for="settingMaxBooks">Max Books Per Member</label>
                                             <input type="number" id="settingMaxBooks" class="form-control" min="1" max="10" required>
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label fw-semibold">Default Loan Period (Days)</label>
+                                            <label class="form-label" for="settingLoanPeriod">Default Loan Period (Days)</label>
                                             <input type="number" id="settingLoanPeriod" class="form-control" min="1" max="90" required>
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label fw-semibold">Fine Rate Per Overdue Day ($)</label>
+                                            <label class="form-label" for="settingFineRate">Fine Rate Per Day (₹)</label>
                                             <input type="number" id="settingFineRate" class="form-control" step="0.5" min="0" required>
                                         </div>
                                     </div>
 
                                     <div class="mb-4">
-                                        <label class="form-label fw-semibold">Library Announcement / Notice Banner</label>
-                                        <textarea id="settingNotice" class="form-control" rows="3" placeholder="Announcement shown on top of the dashboard..."></textarea>
+                                        <label class="form-label" for="settingNotice">Library Announcement / Notice Banner</label>
+                                        <textarea id="settingNotice" class="form-control" rows="3" placeholder="Enter system announcement shown to all users..."></textarea>
                                     </div>
 
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-save me-1"></i> Save System Configuration
+                                    <button type="submit" id="btnAdminSave" class="btn btn-primary px-4 py-2 fw-semibold">
+                                        <i class="bi bi-save me-1"></i> Save Configuration
                                     </button>
                                 </form>
                             </div>
@@ -851,11 +1150,11 @@
         </main>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- MODALS                                                       -->
-    <!-- ============================================================ -->
+    <!-- ======================================================================
+         MODALS & DIALOGS
+         ====================================================================== -->
 
-    <!-- 1. User Modal (Add/Edit) -->
+    <!-- 1. User Modal (Add & Edit) -->
     <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -867,28 +1166,28 @@
                     <div class="modal-body">
                         <input type="hidden" id="userId">
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                            <label class="form-label" for="userName">Full Name <span class="text-danger">*</span></label>
                             <input type="text" id="userName" class="form-control" required placeholder="e.g. Alice Johnson">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                            <label class="form-label" for="userEmail">Email Address <span class="text-danger">*</span></label>
                             <input type="email" id="userEmail" class="form-control" required placeholder="alice@college.edu">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Phone Number</label>
+                            <label class="form-label" for="userPhone">Phone Number</label>
                             <input type="text" id="userPhone" class="form-control" placeholder="9876543210">
                         </div>
-                        <div class="row g-2 mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Membership Type</label>
+                        <div class="row g-2">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="userMembershipType">Role / Type</label>
                                 <select id="userMembershipType" class="form-select">
                                     <option value="Student">Student</option>
                                     <option value="Faculty">Faculty</option>
                                     <option value="Guest">Guest</option>
                                 </select>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Status</label>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="userStatus">Status</label>
                                 <select id="userStatus" class="form-select">
                                     <option value="Active">Active</option>
                                     <option value="Inactive">Inactive</option>
@@ -898,75 +1197,119 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Member</button>
+                        <button type="submit" id="btnUserSubmit" class="btn btn-primary">Save Member</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- 2. Book Modal (Add/Edit) -->
+    <!-- 2. Book Modal (Add & Edit) -->
     <div class="modal fade" id="bookModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form id="bookForm">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="bookModalTitle">Add New Book</h5>
+                        <h5 class="modal-title" id="bookModalTitle">Add New Book to Catalog</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <input type="hidden" id="bookId">
                         <div class="row g-3 mb-3">
                             <div class="col-md-8">
-                                <label class="form-label fw-semibold">Book Title <span class="text-danger">*</span></label>
-                                <input type="text" id="bookTitle" class="form-control" required placeholder="e.g. Introduction to Algorithms">
+                                <label class="form-label" for="bookTitle">Book Title <span class="text-danger">*</span></label>
+                                <input type="text" id="bookTitle" class="form-control" required placeholder="e.g. Clean Architecture">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">Author <span class="text-danger">*</span></label>
-                                <input type="text" id="bookAuthor" class="form-control" required placeholder="Thomas H. Cormen">
+                                <label class="form-label" for="bookAuthor">Author <span class="text-danger">*</span></label>
+                                <input type="text" id="bookAuthor" class="form-control" required placeholder="Robert C. Martin">
                             </div>
                         </div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">ISBN <span class="text-danger">*</span></label>
-                                <input type="text" id="bookIsbn" class="form-control" required placeholder="978-0262033848">
+                                <label class="form-label" for="bookIsbn">ISBN Number <span class="text-danger">*</span></label>
+                                <input type="text" id="bookIsbn" class="form-control" required placeholder="978-0134494166">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Category <span class="text-danger">*</span></label>
+                                <label class="form-label" for="bookCategory">Category <span class="text-danger">*</span></label>
                                 <input type="text" id="bookCategory" class="form-control" required placeholder="Computer Science">
                             </div>
                         </div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Publisher</label>
-                                <input type="text" id="bookPublisher" class="form-control" placeholder="MIT Press">
+                                <label class="form-label" for="bookPublisher">Publisher</label>
+                                <input type="text" id="bookPublisher" class="form-control" placeholder="Prentice Hall">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Rack / Shelf Location</label>
-                                <input type="text" id="bookRackNumber" class="form-control" placeholder="Rack CS-101">
+                                <label class="form-label" for="bookRackNumber">Rack / Shelf Location</label>
+                                <input type="text" id="bookRackNumber" class="form-control" placeholder="Rack CS-105">
                             </div>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Total Copies</label>
+                                <label class="form-label" for="bookTotalCopies">Total Physical Copies <span class="text-danger">*</span></label>
                                 <input type="number" id="bookTotalCopies" class="form-control" value="3" min="1" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Book Price ($)</label>
-                                <input type="number" id="bookPrice" class="form-control" step="0.01" value="25.00" min="0">
+                                <label class="form-label" for="bookPrice">Book Price (₹)</label>
+                                <input type="number" id="bookPrice" class="form-control" step="0.01" value="29.99" min="0">
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-success">Save Book</button>
+                        <button type="submit" id="btnBookSubmit" class="btn btn-success">Save Book</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- 3. Fine Payment Modal -->
+    <!-- 3. Return Book Confirmation Modal -->
+    <div class="modal fade" id="returnModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="returnConfirmForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="bi bi-arrow-return-left text-warning me-2"></i>Confirm Book Return</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="returnIssueId">
+                        <div class="p-3 bg-light rounded border mb-3">
+                            <div class="mb-2"><strong>Book:</strong> <span id="returnModalBookTitle" class="text-primary">-</span></div>
+                            <div class="mb-2"><strong>Borrower:</strong> <span id="returnModalUserName">-</span></div>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6"><small class="text-muted">Issue Date:</small> <div id="returnModalIssueDate" class="fw-semibold">-</div></div>
+                                <div class="col-6"><small class="text-muted">Due Date:</small> <div id="returnModalDueDate" class="fw-semibold">-</div></div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                <span>Overdue Days:</span>
+                                <span id="returnModalOverdueDays" class="badge bg-secondary">0 days</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span>Applicable Fine:</span>
+                                <span id="returnModalFineEst" class="fs-5 fw-bold text-success">₹0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="returnModalRemarks">Return Condition / Notes</label>
+                            <textarea id="returnModalRemarks" class="form-control" rows="2" placeholder="e.g. Good condition, returned in person"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" id="btnReturnConfirmSubmit" class="btn btn-warning text-dark fw-bold">
+                            <i class="bi bi-check2-circle me-1"></i> Process Return
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Pay Fine Modal -->
     <div class="modal fade" id="payFineModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -977,41 +1320,93 @@
                     </div>
                     <div class="modal-body">
                         <input type="hidden" id="payFineId">
-                        <div class="alert alert-info py-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span>Total Fine Payable:</span>
-                                <strong id="payFineAmount" class="fs-5 text-danger">$0.00</strong>
-                            </div>
+                        <div class="alert alert-info py-2 d-flex justify-content-between align-items-center">
+                            <span>Total Payable Amount:</span>
+                            <strong id="payFineAmount" class="fs-4 text-danger">₹0.00</strong>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Payment Mode</label>
-                            <select id="payFineMode" class="form-select">
-                                <option value="Cash">Cash</option>
+                            <label class="form-label" for="payFineMode">Payment Mode <span class="text-danger">*</span></label>
+                            <select id="payFineMode" class="form-select" required>
+                                <option value="Cash">Cash (At Circulation Desk)</option>
                                 <option value="UPI">UPI / QR Code</option>
                                 <option value="Card">Debit / Credit Card</option>
-                                <option value="Online">Online Portal</option>
+                                <option value="Online">Online Banking Portal</option>
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-semibold">Receipt Remarks</label>
-                            <textarea id="payFineRemarks" class="form-control" rows="2" placeholder="Receipt / transaction reference"></textarea>
+                            <label class="form-label" for="payFineRemarks">Receipt Note / Transaction Reference</label>
+                            <textarea id="payFineRemarks" class="form-control" rows="2" placeholder="e.g. Receipt #1042 issued"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-success">Record Payment</button>
+                        <button type="submit" id="btnPayFineSubmit" class="btn btn-success fw-semibold">
+                            <i class="bi bi-check-lg me-1"></i> Record Payment
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Toast Container -->
-    <div class="toast-container toast-container-custom" id="toastContainer"></div>
+    <!-- 5. Return Result Alert Modal -->
+    <div class="modal fade" id="returnResultModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-check-circle-fill me-2"></i>Book Returned Successfully</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <i class="bi bi-check2-circle text-success" style="font-size: 3.5rem;"></i>
+                    <h5 class="fw-bold mt-2" id="returnResultTitle">Book Check-in Complete</h5>
+                    <p class="text-muted" id="returnResultMessage">The book has been returned and stock copy restored.</p>
+                    <div id="returnResultFineBox" class="p-3 bg-light rounded border text-start d-none">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Overdue Days:</span>
+                            <strong id="returnResultOverdueDays">0 days</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Overdue Fine Incurred:</span>
+                            <strong class="text-danger fs-5" id="returnResultFineAmount">₹0.00</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary d-none" id="btnGoToFinePay" onclick="goToFinePayFromReturn()">
+                        <i class="bi bi-cash me-1"></i> Pay Fine Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <!-- Bootstrap 5 JS Bundle -->
+    <!-- 6. Generic Confirmation Modal (Delete / Action) -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title" id="confirmModalTitle">Please Confirm</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmModalBody">
+                    Are you sure you want to proceed?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger btn-sm" id="confirmModalActionBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container-custom" id="toastContainer"></div>
+
+    <!-- Bootstrap 5.3.3 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom Application JS -->
+    <!-- Custom Application Logic JS -->
     <script src="/js/app.js"></script>
 </body>
 </html>

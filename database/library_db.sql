@@ -122,4 +122,4 @@ VALUES
 -- Insert Sample Fines
 INSERT INTO fines (issue_id, user_id, amount, overdue_days, status, paid_date, payment_mode, remarks)
 VALUES
-(4, 1, 25.0, 5, 'UNPAID', NULL, NULL, 'Returned 5 days late - Fine $5/day');
+(4, 1, 25.0, 5, 'UNPAID', NULL, NULL, 'Returned 5 days late - Fine ₹5/day');
